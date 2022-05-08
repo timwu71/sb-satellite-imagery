@@ -128,7 +128,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
           scores = model(x).cpu().numpy()
           _, preds = scores.max(1)
           num_correct += (preds == y.cpu().numpy()).sum()
-          num_samples += preds.size(0)
+          num_samples += preds.shape[0]
           
           # for r^2
           np.concatenate((all_preds, preds))
