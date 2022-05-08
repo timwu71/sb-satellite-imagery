@@ -91,14 +91,16 @@ def get_data_split(label, split, frac):
 
     path_years = df[['DHSID_EA', 'path', 'year']].apply(tuple, axis=1)
     df.set_index('DHSID_EA', verify_integrity=True, inplace=True, drop=False) #had to add drop=False to keep column from disappearing  -- R
-      
+    
     if frac != 1:
       df = df.sample(frac=frac)
     
     train_dhsids = df.index[df['cc'].isin(SPLITS[split]) & df[label].notna()]
 
     train_X_paths = df.loc[train_dhsids, 'path'].values.reshape(-1, 1)
+    print('df loaded')  
     train_X = paths_to_X(train_X_paths)
+    print('paths_to_X done')
     train_Y = df.loc[train_dhsids, label].values
     
     # knn.fit(train_X, train_Y)
