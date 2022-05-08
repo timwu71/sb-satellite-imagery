@@ -19,6 +19,8 @@ import torchvision.transforms as T
 
 import torch.nn.functional as F  # useful stateless functions
 
+import get_partial_data
+
 
 # TODO: copy dhs_final_labels.csv to VM, change os path below accordingly
 df = pd.read_csv('/home/timwu0/231nproj/data/dhs_final_labels.csv')
@@ -34,28 +36,6 @@ path_years = df[['DHSID_EA', 'path', 'year']].apply(tuple, axis=1)
 df.set_index('DHSID_EA', verify_integrity=True, inplace=True, drop=False) #had to add drop=False to keep column from disappearing  -- R
 print(df['path'].iloc[0])
 df.info()
-
-
-def paths_to_X(paths):  # -> (N, C, H, W) model input X
-  '''
-    Args
-    - paths: array (N, 1)
-      - path: str, path to npz file containing single entry 'x'
-        representing a (C, H, W) image
-
-    Returns: X, input matrix (N, C, H, W)
-    '''
-  N = len(paths)  # should be 117644
-  C, H, W = 8, 255, 255
-  
-  imgs = []
-  for n in range(N):
-    npz_path = paths[n][0]
-    imgs.append(np.load(npz_path)['x'])  # shape (C, H, W)
-    if n % 2000  == 0:
-        print('On example', n)
-  
-  return np.stack(imgs, axis=0)
   
 
 
@@ -75,7 +55,6 @@ SPLITS = {
 }
 SPLITS['trainval'] = SPLITS['train'] + SPLITS['val']
 
-
 #partial splits
 
 SPLITS['train_partial'] = SPLITS['train'][:5]
@@ -84,31 +63,20 @@ SPLITS['test_partial'] = SPLITS['train'][:2]
 SPLITS['trainval_partial'] = SPLITS['train_partial'] + SPLITS['val_partial']
 
 
-def get_data_split(label, split):
-    train_dhsids = df.index[df['cc'].isin(SPLITS[split]) & df[label].notna()]
-    
-    train_X_paths = df.loc[train_dhsids, 'path'].values.reshape(-1, 1)
-    train_X = paths_to_X(train_X_paths)
-    train_Y = df.loc[train_dhsids, label].values
-    
-    # knn.fit(train_X, train_Y)
-    # preds = knn.predict(test_X)
-    return train_X, train_Y
 
-
-train_X, train_Y = get_data_split(label, 'train_partial')
+train_X, train_Y = get_partial_data.get_data_split(label, 'train_partial', 1)
 print("train_X: ", train_X.shape)
 print("train_Y: ", train_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
 np.savez_compressed('/home/timwu0/231nproj/data_clean/train_partial', train_X=train_X, train_Y=train_Y)
 
-val_X, val_Y = get_data_split(label, 'val_partial')
+val_X, val_Y = get_partial_data.get_data_split(label, 'val_partial', 1)
 print("val_X: ", val_X.shape)
 print("val_Y: ", val_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
 np.savez_compressed('/home/timwu0/231nproj/data_clean/val_partial', val_X=val_X, val_Y=val_Y)
 
-test_X, test_Y = get_data_split(label, 'test_partial')
+test_X, test_Y = get_partial_data.get_data_split(label, 'test_partial', 1)
 print("test_X: ", test_X.shape)
 print("test_Y: ", test_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
