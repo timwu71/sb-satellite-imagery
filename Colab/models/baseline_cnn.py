@@ -70,15 +70,15 @@ def load_data(data):
     else: 
         print('generating random data...')
         label = "n_under5_mort" 
-        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.02)
+        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.002)
         print("train_X: ", train_X.shape)
         print("train_Y: ", train_Y.shape)
 
-        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.02)
+        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.002)
         print("val_X: ", val_X.shape)
         print("val_Y: ", val_Y.shape)
 
-        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.02)
+        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.002)
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
     return torch.from_numpy(train_X), torch.from_numpy(train_Y), torch.from_numpy(val_X), torch.from_numpy(val_Y), torch.from_numpy(test_X), torch.from_numpy(test_Y)
@@ -212,12 +212,12 @@ best_val = 0
 model = None
 optimizer = None
 
-channel_0 = 8
-channel_1 = 32
-channel_2 = 16
-channel_3 = 16
-hidden_layer_size = 32
-learning_rates = [1e-1, 1e-2, 1e-3, 1e-4]
+channel_0 = 32
+channel_1 = 64
+channel_2 = 32
+channel_3 = 32
+hidden_layer_size = 128
+learning_rates = [1e-2, 1e-3, 1e-4]
 
 model = nn.Sequential(
     nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
