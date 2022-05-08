@@ -121,19 +121,20 @@ def check_accuracy_part34(X, Y, model, val_or_test):
     with torch.no_grad():
         model = model.to(device=device)  # move the model parameters to CPU/GPU
         for t in range(num_batches):
-          x = X[t*num_batches:(t+1)*num_batches, :, :, :]
-          y = Y[t*num_batches:(t+1)*num_batches]
+          x = X[t*batch_size:(t+1)*batch_size, :, :, :]
+          y = Y[t*batch_size:(t+1)*batch_size]
           x = x.to(device=device, dtype=dtype)  # move to device, e.g. GPU
           y = y.to(device=device, dtype=torch.long)
           scores = model(x).cpu().numpy()
-          _, preds = scores.max(1)
+          #print(scores.shape)
+          preds = np.amax(scores, axis=1)
           num_correct += (preds == y.cpu().numpy()).sum()
-          print(preds.shape)
-          num_samples += preds.shape
+          num_samples += preds.shape[0]
           
           # for r^2
           np.concatenate((all_preds, preds))
-        r2 = scipy.stats.pearsonr(all_preds, Y.numpy())
+        print(all_preds.shape, Y.cpu().numpy().shape)
+        r2 = scipy.stats.pearsonr(all_preds, Y.cpu().numpy()[:all_preds.shape[0]])
         acc = float(num_correct) / num_samples
         print('Got %d / %d correct (%.2f)' % (num_correct, num_samples, 100 * acc), ' and an r^2 value of', r2)
     return acc, r2
