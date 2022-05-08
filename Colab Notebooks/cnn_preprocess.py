@@ -91,3 +91,13 @@ print("val_X: ", val_X.shape)
 print("val_Y: ", val_Y.shape)
 print("test_X: ", test_X.shape)
 print("test_Y: ", test_Y.shape)
+
+print('Saving data in /home/timwu0/231nproj/clean_data.npz')
+np.savez_compressed('/home/timwu0/231nproj/clean_data', train_X=train_X, 
+                                                        train_Y=train_Y, 
+                                                        val_X=val_X, 
+                                                        val_Y=val_Y, 
+                                                        trainval_X=trainval_X,
+                                                        trainval_Y=trainval_Y, 
+                                                        test_X=test_X, 
+                                                        test_Y=test_Y)
