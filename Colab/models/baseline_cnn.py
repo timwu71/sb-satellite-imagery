@@ -70,15 +70,15 @@ def load_data(data):
     else: 
         print('generating random data...')
         label = "n_under5_mort" 
-        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.002)
+        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.02)
         print("train_X: ", train_X.shape)
         print("train_Y: ", train_Y.shape)
 
-        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.002)
+        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.02)
         print("val_X: ", val_X.shape)
         print("val_Y: ", val_Y.shape)
 
-        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.002)
+        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.02)
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
     return torch.from_numpy(train_X), torch.from_numpy(train_Y), torch.from_numpy(val_X), torch.from_numpy(val_Y), torch.from_numpy(test_X), torch.from_numpy(test_Y)
@@ -136,6 +136,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
         all_preds = np.concatenate(all_preds, axis=0)
         print('preds:', all_preds[:10], 'actual:', Y.cpu().numpy()[:10])
         r2, _ = scipy.stats.pearsonr(all_preds, Y.cpu().numpy()[:all_preds.shape[0]])
+        r2 = r2 ** 2
         acc = float(num_correct) / num_samples
         print('Got %d / %d correct (%.2f)' % (num_correct, num_samples, 100 * acc), ' and an r^2 value of', r2)
     return acc, r2
@@ -175,7 +176,7 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
           scores = model(x)
           y_one_hots = torch.zeros_like(scores)
           y_one_hots[np.arange(y.size(dim=0)),y] = 1
-          print('scores:', scores, 'y:' , y_one_hots)
+          # print('scores:', scores, 'y:' , y_one_hots)
           loss = F.cross_entropy(scores, y_one_hots)
 
           # Zero out all of the gradients for the variables which the optimizer
@@ -217,7 +218,7 @@ channel_1 = 32
 channel_2 = 16
 channel_3 = 16
 hidden_layer_size = 32
-learning_rates = [1e-1, 1e-2, 1e-3, 1e-4]
+learning_rate = 1e-3
 
 model = nn.Sequential(
     nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
@@ -233,19 +234,18 @@ model = nn.Sequential(
     nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 8 to 4
     nn.BatchNorm2d(num_features = channel_3),
     Flatten(),
-    nn.Linear(15376 /4, hidden_layer_size),
+    nn.Linear(15376, hidden_layer_size),
     nn.ReLU(),
     nn.Linear(hidden_layer_size, 167),
 )
 
-for learning_rate in learning_rates:
-    print('LEARNING RATE: ', learning_rate)
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
 
-    train_part34(model, optimizer, epochs=5, val_or_test="val")
-    val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
-    if r2 > best_val:
-        best_model = model
+
+train_part34(model, optimizer, epochs=5, val_or_test="val")
+val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
+if r2 > best_val:
+  best_model = model
 
 
 best_model = model
