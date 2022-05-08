@@ -1,6 +1,7 @@
 import sys
 from concurrent.futures import ThreadPoolExecutor
 import os
+import magic
 
 import numpy as np
 import pandas as pd
@@ -9,12 +10,12 @@ from tqdm.auto import tqdm
 
 
 # TODO: copy dhs_final_labels.csv to VM, change os path below accordingly
-df = pd.read_csv('/231nproj/data/dhs_final_labels.csv')
+df = pd.read_csv('/home/timwu0/231nproj/data/dhs_final_labels.csv')
 df['survey'] = df['DHSID_EA'].str[:10]
 df['cc'] = df['DHSID_EA'].str[:2]
 
 # TODO: run modified version of get_public_datasets.py, change data_dir below to match VM path
-data_dir = '/231nproj/data'
+data_dir = '/home/timwu0/231nproj/data/'
 df['path'] = data_dir + df['survey'] + '/' + df['DHSID_EA'] + '.npz'
 # df['path'] = dataset_root_dir + '/dhs_npzs/' + df['survey'] + '/' + df['DHSID_EA'] + '.npz'
 
@@ -22,7 +23,6 @@ path_years = df[['DHSID_EA', 'path', 'year']].apply(tuple, axis=1)
 df.set_index('DHSID_EA', verify_integrity=True, inplace=True, drop=False) #had to add drop=False to keep column from disappearing  -- R
 print(df['path'].iloc[0])
 df.info()
-display(df.head())
 
 
 def paths_to_X(paths):  # -> (N, C, H, W) model input X
@@ -37,10 +37,14 @@ def paths_to_X(paths):  # -> (N, C, H, W) model input X
   N = len(paths)  # should be 117644
   C, H, W = 8, 255, 255
   X = np.zeros((N, C, H, W))
+
+  imgs = []
   for n in range(N):
-    npz_path = paths[n]
-    img = np.load(npz_path)['x']  # shape (C, H, W)
-    X[n, :, :, :] = img
+    npz_path = paths[n][0]
+    imgs.append(np.load(npz_path)['x'])  # shape (C, H, W)
+    if n % 1000 == 0:
+        print('On example', n)
+  np.concatenate(imgs, axis=0)
   return X
 
 
