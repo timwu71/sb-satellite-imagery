@@ -81,7 +81,7 @@ def load_data(data='random'):
         test_X, test_Y = get_partial_data.get_data_split(label, 'test')
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
-    return train_X, train_Y, val_X, val_Y, test_X, test_Y
+    return torch.from_numpy(train_X), torch.from_numpy(train_Y), torch.from_numpy(val_X), torch.from_numpy(val_Y), torch.from_numpy(test_X), torch.from_numpy(test_Y)
 
 
 
@@ -112,7 +112,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
         print('Checking accuracy on test set')
 
     batch_size = 64
-    num_batches = Y.shape // batch_size   
+    num_batches = Y.shape[0] // batch_size   
     num_correct = 0
     num_samples = 0
     model.eval()  # set model to evaluation mode
@@ -156,7 +156,7 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
     elif val_or_test == "test":
       X = trainval_X
       Y = trainval_Y
-    num_batches = Y.shape // batch_size
+    num_batches = Y.shape[0] // batch_size
 
     model = model.to(device=device)  # move the model parameters to CPU/GPU
     for e in range(epochs):
