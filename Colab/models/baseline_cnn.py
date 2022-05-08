@@ -209,14 +209,15 @@ class Flatten(nn.Module):
 
 
 best_val = 0
+best_lr = None
 
 model = None
 optimizer = None
 
 channel_0 = 8
-channel_1 = 32
-channel_2 = 16
-channel_3 = 16
+channel_1 = 64
+channel_2 = 64
+channel_3 = 32
 hidden_layer_size = 32
 learning_rates = [1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
 
@@ -247,6 +248,7 @@ for learning_rate in learning_rates:
     val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
     if r2 > best_val:
         best_model = model
+        best_lr = learning_rate
 
 
 best_model = model
