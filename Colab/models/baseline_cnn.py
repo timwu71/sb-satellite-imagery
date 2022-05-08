@@ -125,7 +125,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
           y = Y[t*num_batches:(t+1)*num_batches]
           x = x.to(device=device, dtype=dtype)  # move to device, e.g. GPU
           y = y.to(device=device, dtype=torch.long)
-          scores = model(x).numpy()
+          scores = model(x).cpu().numpy()
           _, preds = scores.max(1)
           num_correct += (preds == y.numpy()).sum()
           num_samples += preds.size(0)
