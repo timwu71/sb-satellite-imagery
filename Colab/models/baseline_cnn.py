@@ -20,8 +20,8 @@ import torchvision.transforms as T
 
 import torch.nn.functional as F  # useful stateless functions
 
-import cnn_preprocess_partial
-
+# Note: when testing on your own may have to change this to reset your python path
+import get_partial_data
 
 def load_data(data='random'):
 # parameter data is 'all', 'partial', or 'random'. 
@@ -68,16 +68,17 @@ def load_data(data='random'):
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
     else: 
+        print('generating random data...')
         label = "n_under5_mort" 
-        train_X, train_Y = cnn_preprocess_partial.get_data_split(label, 'train', frac=0.1)
+        train_X, train_Y = get_partial_data.get_data_split(label, 'train', frac=0.1)
         print("train_X: ", train_X.shape)
         print("train_Y: ", train_Y.shape)
 
-        val_X, val_Y = cnn_preprocess_partial.get_data_split(label, 'val')
+        val_X, val_Y = get_partial_data.get_data_split(label, 'val')
         print("val_X: ", val_X.shape)
         print("val_Y: ", val_Y.shape)
 
-        test_X, test_Y = cnn_preprocess_partial.get_data_split(label, 'test')
+        test_X, test_Y = get_partial_data.get_data_split(label, 'test')
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
 
