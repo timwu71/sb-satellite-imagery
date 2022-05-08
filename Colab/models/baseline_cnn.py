@@ -246,7 +246,7 @@ for learning_rate in learning_rates:
     train_part34(model, optimizer, epochs=5, val_or_test="val")
     val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
     if r2 > best_val:
-    best_model = model
+        best_model = model
 
 
 best_model = model
