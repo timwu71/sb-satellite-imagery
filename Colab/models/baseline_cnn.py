@@ -132,10 +132,9 @@ def check_accuracy_part34(X, Y, model, val_or_test):
           num_samples += preds.shape[0]
           
           # for r^2
-          print('preds:', preds[:10])
           all_preds.append(preds)
         all_preds = np.concatenate(all_preds, axis=0)
-        print(all_preds.shape, Y.cpu().numpy().shape)
+        print('preds:', all_preds[:10], 'actual:', Y.cpu().numpy()[:10])
         r2, _ = scipy.stats.pearsonr(all_preds, Y.cpu().numpy()[:all_preds.shape[0]])
         acc = float(num_correct) / num_samples
         print('Got %d / %d correct (%.2f)' % (num_correct, num_samples, 100 * acc), ' and an r^2 value of', r2)
