@@ -80,12 +80,10 @@ def paths_to_X(paths):  # -> (N, C, H, W) model input X
 
 
 def get_data_split(label, split, frac):
-    all_df = df['cc'].isin(SPLITS[split]) & df[label].notna()
-    
     if frac != 1:
-      all_df = all_df.sample(frac=frac)
+      df = df.sample(frac=frac)
     
-    train_dhsids = df.index[all_df]
+    train_dhsids = df.index[df['cc'].isin(SPLITS[split]) & df[label].notna()]
 
     train_X_paths = df.loc[train_dhsids, 'path'].values.reshape(-1, 1)
     train_X = paths_to_X(train_X_paths)
