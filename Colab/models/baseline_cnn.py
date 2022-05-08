@@ -239,6 +239,7 @@ model = nn.Sequential(
 )
 
 for learning_rate in learning_rates:
+    print('LEARNING RATE: ', learning_rate)
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
 
     train_part34(model, optimizer, epochs=5, val_or_test="val")
