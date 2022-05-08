@@ -50,7 +50,8 @@ def paths_to_X(paths):  # -> (N, C, H, W) model input X
   X = np.zeros((N, C, H, W))
 
   imgs = []
-  for n in range(N):
+  for n in range(100):
+  #for n in range(N):
     npz_path = paths[n][0]
     imgs.append(np.load(npz_path)['x'])  # shape (C, H, W)
     if n % 1000 == 0:
@@ -104,9 +105,9 @@ trainval_X, trainval_Y = get_data_split(label, 'val')
 print("trainval_X: ", trainval_X.shape)
 print("trainval_Y: ", trainval_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/clean_data')
-np.savez_compressed('/home/timwu0/231nproj/clean_data/val', trainval_X=trainval_X, trainval_Y=trainval_Y)
+np.savez_compressed('/home/timwu0/231nproj/clean_data/trainval', trainval_X=trainval_X, trainval_Y=trainval_Y)
 
 test_X, test_Y = get_data_split(label, 'test')
 print("test_X: ", test_X.shape)
 print("test_Y: ", test_Y.shape)
-np.savez_compressed('/home/timwu0/231nproj/clean_data/val', test_X=test_X, test_Y=test_Y)
+np.savez_compressed('/home/timwu0/231nproj/clean_data/test', test_X=test_X, test_Y=test_Y)
