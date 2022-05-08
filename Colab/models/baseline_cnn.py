@@ -212,12 +212,12 @@ best_val = 0
 model = None
 optimizer = None
 
-channel_0 = 32
+channel_0 = 8
 channel_1 = 64
 channel_2 = 32
 channel_3 = 32
 hidden_layer_size = 128
-learning_rates = [1e-2, 1e-3, 1e-4]
+learning_rates = [1e-1, 1e-2, 1e-3, 1e-4]
 
 model = nn.Sequential(
     nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
@@ -233,7 +233,7 @@ model = nn.Sequential(
     nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 8 to 4
     nn.BatchNorm2d(num_features = channel_3),
     Flatten(),
-    nn.Linear(15376, hidden_layer_size),
+    nn.Linear(15376*2, hidden_layer_size),
     nn.ReLU(),
     nn.Linear(hidden_layer_size, 167),
 )
