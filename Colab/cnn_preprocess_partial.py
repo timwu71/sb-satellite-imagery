@@ -64,19 +64,19 @@ SPLITS['trainval_partial'] = SPLITS['train_partial'] + SPLITS['val_partial']
 
 
 
-train_X, train_Y = get_partial_data.get_data_split(df, label, 'train_partial', 1)
+train_X, train_Y = get_partial_data.get_data_split(label, 'train_partial', 1)
 print("train_X: ", train_X.shape)
 print("train_Y: ", train_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
 np.savez_compressed('/home/timwu0/231nproj/data_clean/train_partial', train_X=train_X, train_Y=train_Y)
 
-val_X, val_Y = get_partial_data.get_data_split(df, label, 'val_partial', 1)
+val_X, val_Y = get_partial_data.get_data_split(label, 'val_partial', 1)
 print("val_X: ", val_X.shape)
 print("val_Y: ", val_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
 np.savez_compressed('/home/timwu0/231nproj/data_clean/val_partial', val_X=val_X, val_Y=val_Y)
 
-test_X, test_Y = get_partial_data.get_data_split(df, label, 'test_partial', 1)
+test_X, test_Y = get_partial_data.get_data_split(label, 'test_partial', 1)
 print("test_X: ", test_X.shape)
 print("test_Y: ", test_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
