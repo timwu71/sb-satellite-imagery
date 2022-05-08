@@ -80,6 +80,21 @@ def paths_to_X(paths):  # -> (N, C, H, W) model input X
 
 
 def get_data_split(label, split, frac):
+    
+    if 'df' not in globals():
+
+      df = pd.read_csv('/home/timwu0/231nproj/data/dhs_final_labels.csv')
+      df['survey'] = df['DHSID_EA'].str[:10]
+      df['cc'] = df['DHSID_EA'].str[:2]
+
+      # TODO: run modified version of get_public_datasets.py, change data_dir below to match VM path
+      data_dir = '/home/timwu0/231nproj/data/'
+      df['path'] = data_dir + df['survey'] + '/' + df['DHSID_EA'] + '.npz'
+      # df['path'] = dataset_root_dir + '/dhs_npzs/' + df['survey'] + '/' + df['DHSID_EA'] + '.npz'
+
+      path_years = df[['DHSID_EA', 'path', 'year']].apply(tuple, axis=1)
+      df.set_index('DHSID_EA', verify_integrity=True, inplace=True, drop=False) #had to add drop=False to keep column from disappearing  -- R
+      
     if frac != 1:
       df = df.sample(frac=frac)
     
