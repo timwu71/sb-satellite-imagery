@@ -217,7 +217,7 @@ channel_1 = 32
 channel_2 = 16
 channel_3 = 16
 hidden_layer_size = 32
-learning_rate = 1e-3
+learning_rates = [1e-1, 1e-2, 1e-3, 1e-4]
 
 model = nn.Sequential(
     nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
@@ -238,13 +238,13 @@ model = nn.Sequential(
     nn.Linear(hidden_layer_size, 167),
 )
 
-optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
+for learning_rate in learning_rates:
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
 
-
-train_part34(model, optimizer, epochs=5, val_or_test="val")
-val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
-if r2 > best_val:
-  best_model = model
+    train_part34(model, optimizer, epochs=5, val_or_test="val")
+    val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
+    if r2 > best_val:
+        best_model = model
 
 
 best_model = model
