@@ -111,7 +111,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
     elif val_or_test == "test":
         print('Checking accuracy on test set')
 
-    batch_size = 64
+    batch_size = 16
     num_batches = Y.shape[0] // batch_size   
     num_correct = 0
     num_samples = 0
@@ -153,7 +153,7 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
     Returns: Nothing, but prints model accuracies during training.
     """
     
-    batch_size = 64
+    batch_size = 16
     if val_or_test == "val":
       X = train_X
       Y = train_Y
