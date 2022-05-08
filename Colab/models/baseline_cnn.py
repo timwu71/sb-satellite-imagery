@@ -70,15 +70,15 @@ def load_data(data='random'):
     else: 
         print('generating random data...')
         label = "n_under5_mort" 
-        train_X, train_Y = get_partial_data.get_data_split(label, 'train', frac=0.1)
+        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.02)
         print("train_X: ", train_X.shape)
         print("train_Y: ", train_Y.shape)
 
-        val_X, val_Y = get_partial_data.get_data_split(label, 'val')
+        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.05)
         print("val_X: ", val_X.shape)
         print("val_Y: ", val_Y.shape)
 
-        test_X, test_Y = get_partial_data.get_data_split(label, 'test')
+        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.05)
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
     return torch.from_numpy(train_X), torch.from_numpy(train_Y), torch.from_numpy(val_X), torch.from_numpy(val_Y), torch.from_numpy(test_X), torch.from_numpy(test_Y)
