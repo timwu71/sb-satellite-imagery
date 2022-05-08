@@ -167,9 +167,12 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
           model.train()  # put model to training mode
           x = x.to(device=device, dtype=dtype)  # move to device, e.g. GPU
           y = y.to(device=device, dtype=torch.long)
-
+        
           scores = model(x)
-          loss = F.cross_entropy(scores, y)
+          y_one_hots = torch.zeros_like(scores)
+          y_one_hots[np.arange(y.size(dim=0)),y] = 1
+          print('scores:', scores, 'y:' , y_one_hots)
+          loss = F.cross_entropy(scores, y_one_hots)
 
           # Zero out all of the gradients for the variables which the optimizer
           # will update.
@@ -228,7 +231,7 @@ model = nn.Sequential(
     Flatten(),
     nn.Linear(15376, hidden_layer_size),
     nn.ReLU(),
-    nn.Linear(hidden_layer_size, 10),
+    nn.Linear(hidden_layer_size, 167),
 )
 
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
