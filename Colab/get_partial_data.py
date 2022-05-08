@@ -67,7 +67,7 @@ def paths_to_X(paths):  # -> (N, C, H, W) model input X
   return np.stack(imgs, axis=0) 
 
 
-def get_data_split(label, split, frac):
+def get_data_split(df, label, split, frac):
     train_dhsids = df.index[df['cc'].isin(SPLITS[split]) & df[label].notna()]
     
     if frac != 1:
