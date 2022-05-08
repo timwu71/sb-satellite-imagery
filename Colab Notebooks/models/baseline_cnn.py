@@ -20,29 +20,68 @@ import torchvision.transforms as T
 
 import torch.nn.functional as F  # useful stateless functions
 
+from cnn_preprocess_partial import *
 
-print('loading data...')
 
-train_data = np.load('/home/timwu0/231nproj/data_clean/train.npz', allow_pickle=True)
-train_X, train_Y = train_data['train_X'], train_data['train_Y']
-print("train_X: ", train_X.shape)
-print("train_Y: ", train_Y.shape)
 
-val_data = np.load('/home/timwu0/231nproj/data_clean/val.npz', allow_pickle=True)
-val_X, val_Y = val_data['val_X'], val_data['val_Y']
-print("val_X: ", val_X.shape)
-print("val_Y: ", val_Y.shape)
+def load_data(data='random'):
+# parameter data is 'all', 'partial', or 'random'. 
+# 'all' and 'partial' loads the respective .npz stored files, 'random' randomly generates new partial data.
+    print('loading data...')
 
-trainval_X, trainval_Y = np.concatenate((train_data['train_X'], val_data['val_X']), axis=0), np.concatenate((train_data['train_Y'], val_data['val_Y']), axis=0)
-print("trainval_X: ", trainval_X.shape)
-print("trainval_Y: ", trainval_Y.shape)
+    if data == 'all':
+        # load all data
+        train_data = np.load('/home/timwu0/231nproj/data_clean/train.npz', allow_pickle=True)
+        train_X, train_Y = train_data['train_X'], train_data['train_Y']
+        print("train_X: ", train_X.shape)
+        print("train_Y: ", train_Y.shape)
 
-train_data = np.load('/home/timwu0/231nproj/data_clean/test.npz', allow_pickle=True)
-test_X, test_Y = test_data['test_X'], test_data['test_X'], 
-print("test_X: ", test_X.shape)
-print("test_Y: ", test_Y.shape)
+        val_data = np.load('/home/timwu0/231nproj/data_clean/val.npz', allow_pickle=True)
+        val_X, val_Y = val_data['val_X'], val_data['val_Y']
+        print("val_X: ", val_X.shape)
+        print("val_Y: ", val_Y.shape)
 
-print('finished loading data.')
+        trainval_X, trainval_Y = np.concatenate((train_data['train_X'], val_data['val_X']), axis=0), np.concatenate((train_data['train_Y'], val_data['val_Y']), axis=0)
+        print("trainval_X: ", trainval_X.shape)
+        print("trainval_Y: ", trainval_Y.shape)
+
+        train_data = np.load('/home/timwu0/231nproj/data_clean/test.npz', allow_pickle=True)
+        test_X, test_Y = test_data['test_X'], test_data['test_X'], 
+        print("test_X: ", test_X.shape)
+        print("test_Y: ", test_Y.shape)
+    elif data == 'partial':
+        train_data = np.load('/home/timwu0/231nproj/data_clean/train_partial.npz', allow_pickle=True)
+        train_X, train_Y = train_data['train_X'], train_data['train_Y']
+        print("train_X: ", train_X.shape)
+        print("train_Y: ", train_Y.shape)
+
+        val_data = np.load('/home/timwu0/231nproj/data_clean/val_partial.npz', allow_pickle=True)
+        val_X, val_Y = val_data['val_X'], val_data['val_Y']
+        print("val_X: ", val_X.shape)
+        print("val_Y: ", val_Y.shape)
+
+        trainval_X, trainval_Y = np.concatenate((train_data['train_X'], val_data['val_X']), axis=0), np.concatenate((train_data['train_Y'], val_data['val_Y']), axis=0)
+        print("trainval_X: ", trainval_X.shape)
+        print("trainval_Y: ", trainval_Y.shape)
+
+        test_data = np.load('/home/timwu0/231nproj/data_clean/test_partial.npz', allow_pickle=True)
+        test_X, test_Y = test_data['test_X'], test_data['test_X'], 
+        print("test_X: ", test_X.shape)
+        print("test_Y: ", test_Y.shape)
+    else: 
+        train_X, train_Y = get_data_split(label, 'train', frac=0.1)
+        print("train_X: ", train_X.shape)
+        print("train_Y: ", train_Y.shape)
+
+        val_X, val_Y = get_data_split(label, 'val')
+        print("val_X: ", val_X.shape)
+        print("val_Y: ", val_Y.shape)
+
+        test_X, test_Y = get_data_split(label, 'test')
+        print("test_X: ", test_X.shape)
+        print("test_Y: ", test_Y.shape)
+
+    print('finished loading data.')
 
 
 USE_GPU = True

@@ -78,13 +78,16 @@ SPLITS['trainval'] = SPLITS['train'] + SPLITS['val']
 #partial splits
 
 SPLITS['train_partial'] = SPLITS['train'][:5]
-SPLITS['val_partial'] = SPLITS['train'][:1]
-SPLITS['test_partial'] = SPLITS['train'][:1]
+SPLITS['val_partial'] = SPLITS['train'][:2]
+SPLITS['test_partial'] = SPLITS['train'][:2]
 SPLITS['trainval_partial'] = SPLITS['train_partial'] + SPLITS['val_partial']
 
-def get_data_split(label, split):
+def get_data_split(label, split, frac):
     train_dhsids = df.index[df['cc'].isin(SPLITS[split]) & df[label].notna()]
     
+    if frac !=1:
+      train_dhsids = train_dhsids.sample(frac=frac)
+
     train_X_paths = df.loc[train_dhsids, 'path'].values.reshape(-1, 1)
     train_X = paths_to_X(train_X_paths)
     train_Y = df.loc[train_dhsids, label].values
@@ -94,19 +97,19 @@ def get_data_split(label, split):
     return train_X, train_Y
 
 
-train_X, train_Y = get_data_split(label, 'train_partial')
+train_X, train_Y = get_data_split(label, 'train_partial', 1)
 print("train_X: ", train_X.shape)
 print("train_Y: ", train_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
 np.savez_compressed('/home/timwu0/231nproj/data_clean/train_partial', train_X=train_X, train_Y=train_Y)
 
-val_X, val_Y = get_data_split(label, 'val_partial')
+val_X, val_Y = get_data_split(label, 'val_partial', 1)
 print("val_X: ", val_X.shape)
 print("val_Y: ", val_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
 np.savez_compressed('/home/timwu0/231nproj/data_clean/val_partial', val_X=val_X, val_Y=val_Y)
 
-test_X, test_Y = get_data_split(label, 'test_partial')
+test_X, test_Y = get_data_split(label, 'test_partial', 1)
 print("test_X: ", test_X.shape)
 print("test_Y: ", test_Y.shape)
 print('Saving data in folder /home/timwu0/231nproj/data_clean')
