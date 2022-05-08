@@ -116,9 +116,10 @@ def check_accuracy_part34(X, Y, model, val_or_test):
     num_correct = 0
     num_samples = 0
     model.eval()  # set model to evaluation mode
-
+    
     all_preds = np.empty(shape=(0))
     with torch.no_grad():
+        model = model.to(device=device)  # move the model parameters to CPU/GPU
         for t in range(num_batches):
           x = X[t*num_batches:(t+1)*num_batches, :, :, :]
           y = Y[t*num_batches:(t+1)*num_batches]
@@ -171,7 +172,7 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
           scores = model(x)
           y_one_hots = torch.zeros_like(scores)
           y_one_hots[np.arange(y.size(dim=0)),y] = 1
-          print('scores:', scores, 'y:' , y_one_hots)
+          # print('scores:', scores, 'y:' , y_one_hots)
           loss = F.cross_entropy(scores, y_one_hots)
 
           # Zero out all of the gradients for the variables which the optimizer
