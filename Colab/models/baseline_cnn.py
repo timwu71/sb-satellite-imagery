@@ -20,7 +20,8 @@ import torchvision.transforms as T
 
 import torch.nn.functional as F  # useful stateless functions
 
-from cnn_preprocess_partial import *
+os.chdir("/home/timwu0/231nproj")
+from Colab.cnn_preprocess_partial import *
 
 
 
