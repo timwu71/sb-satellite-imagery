@@ -117,7 +117,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
     num_samples = 0
     model.eval()  # set model to evaluation mode
     
-    all_preds = np.empty(shape=(0))
+    all_preds = []]
     with torch.no_grad():
         model = model.to(device=device)  # move the model parameters to CPU/GPU
         for t in range(num_batches):
@@ -132,7 +132,9 @@ def check_accuracy_part34(X, Y, model, val_or_test):
           num_samples += preds.shape[0]
           
           # for r^2
-          np.concatenate((all_preds, preds))
+          print('preds shape:', preds.shape)
+          all_preds.append(preds)
+        all_preds = np.concatenate(all_preds, axis=0)
         print(all_preds.shape, Y.cpu().numpy().shape)
         r2 = scipy.stats.pearsonr(all_preds, Y.cpu().numpy()[:all_preds.shape[0]])
         acc = float(num_correct) / num_samples
