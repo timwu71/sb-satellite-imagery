@@ -175,7 +175,7 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
           scores = model(x)
           y_one_hots = torch.zeros_like(scores)
           y_one_hots[np.arange(y.size(dim=0)),y] = 1
-          # print('scores:', scores, 'y:' , y_one_hots)
+          print('scores:', scores, 'y:' , y_one_hots)
           loss = F.cross_entropy(scores, y_one_hots)
 
           # Zero out all of the gradients for the variables which the optimizer
@@ -213,10 +213,10 @@ model = None
 optimizer = None
 
 channel_0 = 8
-channel_1 = 64
-channel_2 = 32
-channel_3 = 32
-hidden_layer_size = 128
+channel_1 = 32
+channel_2 = 16
+channel_3 = 16
+hidden_layer_size = 32
 learning_rates = [1e-1, 1e-2, 1e-3, 1e-4]
 
 model = nn.Sequential(
@@ -233,7 +233,7 @@ model = nn.Sequential(
     nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 8 to 4
     nn.BatchNorm2d(num_features = channel_3),
     Flatten(),
-    nn.Linear(15376*2, hidden_layer_size),
+    nn.Linear(15376/4, hidden_layer_size),
     nn.ReLU(),
     nn.Linear(hidden_layer_size, 167),
 )
