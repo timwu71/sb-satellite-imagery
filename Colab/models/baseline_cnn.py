@@ -127,7 +127,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
           y = y.to(device=device, dtype=torch.long)
           scores = model(x).cpu().numpy()
           #print(scores.shape)
-          preds = np.amax(scores, axis=1)
+          preds = np.argmax(scores, axis=1)
           num_correct += (preds == y.cpu().numpy()).sum()
           num_samples += preds.shape[0]
           
