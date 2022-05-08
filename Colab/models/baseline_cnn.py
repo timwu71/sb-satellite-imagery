@@ -23,7 +23,7 @@ import torch.nn.functional as F  # useful stateless functions
 # Note: when testing on your own may have to change this to reset your python path
 import get_partial_data
 
-def load_data(data='random'):
+def load_data(data):
 # parameter data is 'all', 'partial', or 'random'. 
 # 'all' and 'partial' loads the respective .npz stored files, 'random' randomly generates new partial data.
     print('loading data...')
@@ -70,15 +70,15 @@ def load_data(data='random'):
     else: 
         print('generating random data...')
         label = "n_under5_mort" 
-        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.002)
+        train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.02)
         print("train_X: ", train_X.shape)
         print("train_Y: ", train_Y.shape)
 
-        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.005)
+        val_X, val_Y = get_partial_data.get_data_split(label, 'val', 0.02)
         print("val_X: ", val_X.shape)
         print("val_Y: ", val_Y.shape)
 
-        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.005)
+        test_X, test_Y = get_partial_data.get_data_split(label, 'test', 0.02)
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
     return torch.from_numpy(train_X), torch.from_numpy(train_Y), torch.from_numpy(val_X), torch.from_numpy(val_Y), torch.from_numpy(test_X), torch.from_numpy(test_Y)
@@ -117,7 +117,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
     num_samples = 0
     model.eval()  # set model to evaluation mode
     
-    all_preds = []]
+    all_preds = []
     with torch.no_grad():
         model = model.to(device=device)  # move the model parameters to CPU/GPU
         for t in range(num_batches):
@@ -132,11 +132,11 @@ def check_accuracy_part34(X, Y, model, val_or_test):
           num_samples += preds.shape[0]
           
           # for r^2
-          print('preds shape:', preds.shape)
+          print('preds:', preds[:10])
           all_preds.append(preds)
         all_preds = np.concatenate(all_preds, axis=0)
         print(all_preds.shape, Y.cpu().numpy().shape)
-        r2 = scipy.stats.pearsonr(all_preds, Y.cpu().numpy()[:all_preds.shape[0]])
+        r2, _ = scipy.stats.pearsonr(all_preds, Y.cpu().numpy()[:all_preds.shape[0]])
         acc = float(num_correct) / num_samples
         print('Got %d / %d correct (%.2f)' % (num_correct, num_samples, 100 * acc), ' and an r^2 value of', r2)
     return acc, r2
@@ -218,7 +218,7 @@ channel_1 = 32
 channel_2 = 16
 channel_3 = 16
 hidden_layer_size = 32
-learning_rate = 1e-2
+learning_rate = 1e-3
 
 model = nn.Sequential(
     nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
@@ -242,7 +242,7 @@ model = nn.Sequential(
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
 
 
-train_part34(model, optimizer, epochs=1, val_or_test="val")
+train_part34(model, optimizer, epochs=5, val_or_test="val")
 val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
 if r2 > best_val:
   best_model = model
