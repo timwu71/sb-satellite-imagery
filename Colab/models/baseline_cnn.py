@@ -81,8 +81,12 @@ def load_data(data='random'):
         test_X, test_Y = get_partial_data.get_data_split(label, 'test')
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
+    return train_X, train_Y, val_X, val_Y, test_X, test_Y
 
-    print('finished loading data.')
+
+
+train_X, train_Y, val_X, val_Y, test_X, test_Y = load_data(data='random')
+print('finished loading data.')
 
 
 USE_GPU = True
