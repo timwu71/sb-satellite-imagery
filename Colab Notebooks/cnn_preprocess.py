@@ -8,6 +8,17 @@ import pandas as pd
 import sklearn
 from tqdm.auto import tqdm
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from torch.utils.data import sampler
+
+import torchvision.datasets as dset
+import torchvision.transforms as T
+
+import torch.nn.functional as F  # useful stateless functions
+
 
 # TODO: copy dhs_final_labels.csv to VM, change os path below accordingly
 df = pd.read_csv('/home/timwu0/231nproj/data/dhs_final_labels.csv')
@@ -65,39 +76,37 @@ SPLITS = {
 SPLITS['trainval'] = SPLITS['train'] + SPLITS['val']
 
 
-def get_train_and_test(label, trainsplit='train', testsplit='test'):
-    train_dhsids = df.index[df['cc'].isin(SPLITS[trainsplit]) & df[label].notna()]
-    test_dhsids = df.index[df['cc'].isin(SPLITS[testsplit]) & df[label].notna()]
-
+def get_data_split(label, split):
+    train_dhsids = df.index[df['cc'].isin(SPLITS[split]) & df[label].notna()]
+    
     train_X_paths = df.loc[train_dhsids, 'path'].values.reshape(-1, 1)
     train_X = paths_to_X(train_X_paths)
     train_Y = df.loc[train_dhsids, label].values
-    test_X_paths = df.loc[test_dhsids, 'path'].values.reshape(-1, 1)
-    test_X = paths_to_X(test_X_paths)
-    test_Y = df.loc[test_dhsids, label].values
-
+    
     # knn.fit(train_X, train_Y)
     # preds = knn.predict(test_X)
-    return train_X, train_Y, test_X, test_Y
+    return train_X, train_Y
 
 
-train_X, train_Y, val_X, val_Y = get_train_and_test(label, 'train', 'val') 
-trainval_X, trainval_Y, test_X, test_Y = get_train_and_test(label, 'trainval', 'test')
+train_X, train_Y = get_data_split(label, 'train')
 print("train_X: ", train_X.shape)
 print("train_Y: ", train_Y.shape)
-print("trainval_X: ", trainval_X.shape)
-print("trainval_Y: ", trainval_Y.shape)
+print('Saving data in folder /home/timwu0/231nproj/clean_data')
+np.savez_compressed('/home/timwu0/231nproj/clean_data/train', train_X=train_X, train_Y=train_Y)
+
+val_X, val_Y = get_data_split(label, 'val')
 print("val_X: ", val_X.shape)
 print("val_Y: ", val_Y.shape)
+print('Saving data in folder /home/timwu0/231nproj/clean_data')
+np.savez_compressed('/home/timwu0/231nproj/clean_data/val', val_X=val_X, val_Y=val_Y)
+
+trainval_X, trainval_Y = get_data_split(label, 'val')
+print("trainval_X: ", trainval_X.shape)
+print("trainval_Y: ", trainval_Y.shape)
+print('Saving data in folder /home/timwu0/231nproj/clean_data')
+np.savez_compressed('/home/timwu0/231nproj/clean_data/val', trainval_X=trainval_X, trainval_Y=trainval_Y)
+
+test_X, test_Y = get_data_split(label, 'test')
 print("test_X: ", test_X.shape)
 print("test_Y: ", test_Y.shape)
-
-print('Saving data in /home/timwu0/231nproj/clean_data.npz')
-np.savez_compressed('/home/timwu0/231nproj/clean_data', train_X=train_X, 
-                                                        train_Y=train_Y, 
-                                                        val_X=val_X, 
-                                                        val_Y=val_Y, 
-                                                        trainval_X=trainval_X,
-                                                        trainval_Y=trainval_Y, 
-                                                        test_X=test_X, 
-                                                        test_Y=test_Y)
+np.savez_compressed('/home/timwu0/231nproj/clean_data/val', test_X=test_X, test_Y=test_Y)
