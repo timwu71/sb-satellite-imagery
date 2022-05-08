@@ -218,38 +218,41 @@ channel_0 = 8
 channel_1 = 64
 channel_2 = 64
 channel_3 = 32
-hidden_layer_size = 32
+hidden_layer_size_1 = 128
+hidden_layer_size_2 = 32
 learning_rates = [1e-3, 1e-4, 1e-5, 1e-6, 1e-7]
+drop_probs = [0, 0.2, 0.5, 0.8]
 
-model = nn.Sequential(
-    nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
-    nn.ReLU(),
-    nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 32 to 16
-    nn.BatchNorm2d(num_features = channel_1),
-    nn.Conv2d(channel_1, channel_2, (3, 3), padding="same"),
-    nn.ReLU(),
-    nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 16 to 8
-    nn.BatchNorm2d(num_features = channel_2),
-    nn.Conv2d(channel_2, channel_3, (3, 3), padding="same"),
-    nn.ReLU(),
-    nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 8 to 4
-    nn.BatchNorm2d(num_features = channel_3),
-    Flatten(),
-    nn.Linear(15376, hidden_layer_size),
-    nn.ReLU(),
-    nn.Linear(hidden_layer_size, 167),
-)
+for drop_prob in drop_probs:
+    for learning_rate in learning_rates:
+        model = nn.Sequential(
+        nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
+        nn.ReLU(),
+        nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 32 to 16
+        nn.Dropout2d(drop_prob)
+        nn.Conv2d(channel_1, channel_2, (3, 3), padding="same"),
+        nn.ReLU(),
+        nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 16 to 8
+        nn.Dropout2d(drop_prob),
+        nn.Conv2d(channel_2, channel_3, (3, 3), padding="same"),
+        nn.ReLU(),
+        nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 8 to 4
+        nn.BatchNorm2d(num_features = channel_3),
+        Flatten(),
+        nn.Linear(15376, hidden_layer_size_1),
+        nn.ReLU(),
+        nn.Dropout(drop_prob),
+        nn.Linear(hidden_layer_size_1, hidden_layer_size_2),    
+        nn.ReLU(),
+        nn.Linear(hidden_layer_size_2, 167),
+    )
+        optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
 
-for learning_rate in learning_rates:
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9, nesterov=True)
-
-    print('LEARNING RATE:', learning_rate)
+        print('LEARNING RATE:', learning_rate, 'DROP PROB:', drop_prob)
     train_part34(model, optimizer, epochs=5, val_or_test="val")
     val_acc, r2 = check_accuracy_part34(val_X, val_Y, model, "val")
     if r2 > best_val:
         best_model = model
         best_lr = learning_rate
 
-
-best_model = model
 check_accuracy_part34(test_X, test_Y, best_model, "test")
