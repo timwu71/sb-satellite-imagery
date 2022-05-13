@@ -102,9 +102,7 @@ print_every = 100
 print('using device:', device)
 
 
-
-# TODO: find replacement for loader - make function make minibatches
-
+# function adapted from PyTorch.ipynb from CS 231N Assignment 2
 def check_accuracy_part34(X, Y, model, val_or_test):
     if val_or_test == "val":
         print('Checking accuracy on validation set')
@@ -142,6 +140,7 @@ def check_accuracy_part34(X, Y, model, val_or_test):
     return acc, r2
 
 
+# function adapted from PyTorch.ipynb from CS 231N Assignment 2
 def train_part34(model, optimizer, val_or_test, epochs=1):
     """
     Train a model using the PyTorch Module API.
@@ -165,7 +164,7 @@ def train_part34(model, optimizer, val_or_test, epochs=1):
 
     model = model.to(device=device)  # move the model parameters to CPU/GPU
     for e in range(epochs):
-      # TODO: find replacement for loader to make minibatches x, y from X, Y
+      # make minibatches x, y from X, Y
         for t in range(num_batches):
           x = X[t*num_batches:(t+1)*num_batches, :, :, :]
           y = Y[t*num_batches:(t+1)*num_batches]
