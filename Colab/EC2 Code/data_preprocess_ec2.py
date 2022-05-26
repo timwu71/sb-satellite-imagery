@@ -78,9 +78,9 @@ SPLITS['trainval'] = SPLITS['train'] + SPLITS['val']
 
 #partial splits
 
-SPLITS['train_partial'] = SPLITS['train'][:1] #used to be:5
-SPLITS['val_partial'] = SPLITS['val'][:1] #used to be :2
-SPLITS['test_partial'] = SPLITS['test'][:1]	#used to be :2
+SPLITS['train_partial'] = SPLITS['train'][:5] #used to be:5
+SPLITS['val_partial'] = SPLITS['val'][:2] #used to be :2
+SPLITS['test_partial'] = SPLITS['test'][:2]	#used to be :2
 SPLITS['trainval_partial'] = SPLITS['train_partial'] + SPLITS['val_partial']
 
 
