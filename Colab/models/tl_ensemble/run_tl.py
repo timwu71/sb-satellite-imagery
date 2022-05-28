@@ -29,6 +29,9 @@ from data_tl import *
 
 
 train_X, train_Y, val_X, val_Y, test_X, test_Y = load_data(data='random')
+train_X = train_X[:,:3,:,:]
+val_X = val_X[:,:3,:,:]
+test_X = test_X[:,:3,:,:]
 print('finished loading data.')
 
 USE_GPU = True

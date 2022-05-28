@@ -46,7 +46,7 @@ def load_data(data):
         print("trainval_X: ", trainval_X.shape)
         print("trainval_Y: ", trainval_Y.shape)
 
-        train_data = np.load('/home/timwu0/231nproj/data_clean/test.npz', allow_pickle=True)
+        test_data = np.load('/home/timwu0/231nproj/data_clean/test.npz', allow_pickle=True)
         test_X, test_Y = test_data['test_X'], test_data['test_X'], 
         print("test_X: ", test_X.shape)
         print("test_Y: ", test_Y.shape)
@@ -73,7 +73,6 @@ def load_data(data):
         print('generating random data...')
         label = "n_under5_mort" 
         train_X, train_Y = get_partial_data.get_data_split(label, 'train', 0.0005)
-        print(train_X.size())
         print("train_X: ", train_X.shape)
         print("train_Y: ", train_Y.shape)
 

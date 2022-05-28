@@ -228,7 +228,7 @@ for drop_prob in drop_probs:
         nn.Conv2d(channel_0, channel_1, (3, 3), padding="same"),
         nn.ReLU(),
         nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 32 to 16
-        nn.Dropout2d(drop_prob)
+        nn.Dropout2d(drop_prob),
         nn.Conv2d(channel_1, channel_2, (3, 3), padding="same"),
         nn.ReLU(),
         nn.MaxPool2d((2, 2), stride=2),  # changes H, W from 16 to 8
