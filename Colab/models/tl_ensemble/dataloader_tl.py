@@ -49,7 +49,7 @@ SPLITS['trainval'] = SPLITS['train'] + SPLITS['val']
 
 #partial splits
 
-SPLITS['train_partial'] = SPLITS['train'][:7]
+SPLITS['train_partial'] = SPLITS['train'][:5]
 SPLITS['val_partial'] = SPLITS['val'][:5]
 SPLITS['test_partial'] = SPLITS['test'][:5]
 SPLITS['trainval_partial'] = SPLITS['train_partial'] + SPLITS['val_partial']
@@ -96,36 +96,67 @@ class SustainBenchDataset(Dataset):
 
         return image, label
 
-def get_dataloaders(batch_size, num_workers):
-    train_dataset = SustainBenchDataset(
-        annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
-        img_dir='/home/timwu0/231nproj/data/',
-        category = 'n_under5_mort',
-        file_ext = '.npz',
-        split = 'train_partial',
-        bands = [2, 1, 0],
-        transform=data_transform()
-    )
+def get_dataloaders(batch_size, num_workers, partial):
+    if partial:
+        train_dataset = SustainBenchDataset(
+            annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
+            img_dir='/home/timwu0/231nproj/data/',
+            category = 'n_under5_mort',
+            file_ext = '.npz',
+            split = 'train_partial',
+            bands = [2, 1, 0],
+            transform=data_transform()
+        )
 
-    val_dataset = SustainBenchDataset(
-        annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
-        img_dir='/home/timwu0/231nproj/data/',
-        category = 'n_under5_mort',
-        file_ext = '.npz',
-        split = 'val_partial',  #TODO: CHANGE THIS TO VAL
-        bands = [2, 1, 0],
-        transform=data_transform()
-    )
+        val_dataset = SustainBenchDataset(
+            annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
+            img_dir='/home/timwu0/231nproj/data/',
+            category = 'n_under5_mort',
+            file_ext = '.npz',
+            split = 'val_partial',  #TODO: CHANGE THIS TO VAL
+            bands = [2, 1, 0],
+            transform=data_transform()
+        )
 
-    test_dataset = SustainBenchDataset(
-        annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
-        img_dir='/home/timwu0/231nproj/data/',
-        category = 'n_under5_mort',
-        file_ext = '.npz',
-        split = 'test_partial',  #TODO: CHANGE THIS TO TEST
-        bands = [2, 1, 0],
-        transform=data_transform()
-    )
+        test_dataset = SustainBenchDataset(
+            annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
+            img_dir='/home/timwu0/231nproj/data/',
+            category = 'n_under5_mort',
+            file_ext = '.npz',
+            split = 'test_partial',  #TODO: CHANGE THIS TO TEST
+            bands = [2, 1, 0],
+            transform=data_transform()
+        )
+    else:
+        train_dataset = SustainBenchDataset(
+            annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
+            img_dir='/home/timwu0/231nproj/data/',
+            category = 'n_under5_mort',
+            file_ext = '.npz',
+            split = 'train',
+            bands = [2, 1, 0],
+            transform=data_transform()
+        )
+
+        val_dataset = SustainBenchDataset(
+            annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
+            img_dir='/home/timwu0/231nproj/data/',
+            category = 'n_under5_mort',
+            file_ext = '.npz',
+            split = 'val',  #TODO: CHANGE THIS TO VAL
+            bands = [2, 1, 0],
+            transform=data_transform()
+        )
+
+        test_dataset = SustainBenchDataset(
+            annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
+            img_dir='/home/timwu0/231nproj/data/',
+            category = 'n_under5_mort',
+            file_ext = '.npz',
+            split = 'test',  #TODO: CHANGE THIS TO TEST
+            bands = [2, 1, 0],
+            transform=data_transform()
+        )
 
     loader_train = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers)
 
