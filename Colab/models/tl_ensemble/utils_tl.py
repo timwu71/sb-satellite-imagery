@@ -33,10 +33,10 @@ def params_info(model):
 
 def data_transform():
     return transforms.Compose([
-    transforms.Resize((255, 255)),
+    #transforms.Resize((255, 255)),
     transforms.ToTensor(),
     transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    )
-])
+        mean=(0.485, 0.456, 0.406),
+        std=(0.229, 0.224, 0.225)
+        )
+    ])

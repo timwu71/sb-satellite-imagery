@@ -87,9 +87,9 @@ class SustainBenchDataset(Dataset):
           image = np.load(df_row['path'])['x'][self.bands, :, :]
         
         label = df_row[self.category]
-        image = Image.fromarray(image)
         # Apply transforms if needed
         if self.transform:
+            image = np.swapaxes(np.swapaxes(image, 0, 2), 0, 1)
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
@@ -97,8 +97,6 @@ class SustainBenchDataset(Dataset):
         return image, label
 
 def get_dataloaders():
-
-
     train_dataset = SustainBenchDataset(
         annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
         img_dir='/home/timwu0/231nproj/data/',
