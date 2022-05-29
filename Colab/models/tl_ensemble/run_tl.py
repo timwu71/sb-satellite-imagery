@@ -69,6 +69,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     print('Training...')
     train_running_loss = 0.0
     train_running_correct = 0
+    counter = 0
     samples = 0
     for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
         x = x.to(device=device, dtype=torch.float32)
@@ -86,10 +87,11 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         
         loss = criterion(preds, y)
         
+        counter += 1
         samples += y.size(0)
         train_running_loss += loss.item()
         # calculate the accuracy
-        train_running_correct += ((preds - y) < 0.5).sum().item()
+        train_running_correct += (torch.abs(preds - y) < 0.5).sum().item()
         # backprop
         loss.backward()
         optimizer.step()
@@ -102,7 +104,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         #    print(f"Validation loss: {mid_epoch_val_loss:.3f}, validation acc: {mid_epoch_val_acc:.3f} %")
     
     # loss and accuracy for the complete epoch
-    epoch_loss = train_running_loss / samples
+    epoch_loss = train_running_loss / counter
     epoch_acc = 100. * (train_running_correct / samples)
     return epoch_loss, epoch_acc
 
@@ -112,6 +114,7 @@ def val_epoch(model, criterion, loader=loader_val):
     val_running_loss = 0.0
     val_running_correct = 0
     samples = 0
+    counter = 0
     with torch.no_grad():
         for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
             x = x.to(device=device, dtype=torch.float32)
@@ -123,16 +126,17 @@ def val_epoch(model, criterion, loader=loader_val):
             preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
             loss = criterion(preds, y)
             
+            counter += 1
             samples += y.size(0)
             val_running_loss += loss.item()
             # calculate the accuracy
-            val_running_correct += ((preds - y) < 0.5).sum().item()  
+            val_running_correct += (torch.abs(preds - y) < 0.5).sum().item()  
             
-            if samples > 16000:
-                print('preds: ', preds, 'y: ', y, 'preds - y: ', preds - y)
+            #if samples > 16000:
+            #    print('preds: ', preds, 'y: ', y, 'preds - y: ', preds - y)
     
     # loss and accuracy for the complete epoch
-    epoch_loss = val_running_loss / samples
+    epoch_loss = val_running_loss / counter
     epoch_acc = 100. * (val_running_correct / samples)
     return epoch_loss, epoch_acc
 
@@ -150,8 +154,8 @@ for epoch in range(epochs):
     train_acc.append(train_epoch_acc)
     valid_acc.append(valid_epoch_acc)
     print(f"Epoch {epoch+1} finished. Final epoch results:")
-    print(f"Training loss: {train_epoch_loss:.3f}, training acc: {train_epoch_acc:.3f} %")
-    print(f"Validation loss: {valid_epoch_loss:.3f}, validation acc: {valid_epoch_acc:.3f} %")
+    print(f"Training loss: {train_epoch_loss:.3f}, training acc: {train_epoch_acc:.3f}%")
+    print(f"Validation loss: {valid_epoch_loss:.3f}, validation acc: {valid_epoch_acc:.3f}%")
     print('-'*75)
 
 #print("all train losses: ", train_loss)
