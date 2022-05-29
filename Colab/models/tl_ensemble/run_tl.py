@@ -71,7 +71,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     train_running_correct = 0
     samples = 0
     counter = 0
-    for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'):
+    for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
         counter += 1
         x = x.to(device=device, dtype=torch.float32)
         y = y.to(device=device, dtype=torch.float32)
@@ -96,12 +96,12 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         loss.backward()
         optimizer.step()
 
-        if counter % print_every == 0:
-            mid_epoch_train_loss = train_running_loss / samples
-            mid_epoch_train_acc = 100. * (train_running_correct / samples)
-            mid_epoch_val_loss, mid_epoch_val_acc = val_epoch(model, criterion, loader=loader_val_partial)
-            print(f"Training loss: {mid_epoch_train_loss:.3f}, training acc: {mid_epoch_train_acc:.3f} %")
-            print(f"Validation loss: {mid_epoch_val_loss:.3f}, validation acc: {mid_epoch_val_acc:.3f} %")
+        #if counter % print_every == 0:
+        #    mid_epoch_train_loss = train_running_loss / samples
+        #    mid_epoch_train_acc = 100. * (train_running_correct / samples)
+        #    mid_epoch_val_loss, mid_epoch_val_acc = val_epoch(model, criterion, loader=loader_val_partial)
+        #    print(f"Training loss: {mid_epoch_train_loss:.3f}, training acc: {mid_epoch_train_acc:.3f} %")
+        #    print(f"Validation loss: {mid_epoch_val_loss:.3f}, validation acc: {mid_epoch_val_acc:.3f} %")
     
     # loss and accuracy for the complete epoch
     epoch_loss = train_running_loss / samples
