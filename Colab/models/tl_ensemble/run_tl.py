@@ -67,10 +67,8 @@ _, loader_val_partial, _ = get_dataloaders(batch_size, num_workers, partial=True
 def train_epoch(model, optimizer, criterion, loader=loader_train):
     model.train()
     print('Training...')
-    train_running_loss = 0.0
-    train_running_correct = 0
-    counter = 0
-    samples = 0
+    all_preds = []
+    all_y = []
     for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
         x = x.to(device=device, dtype=torch.float32)
         y = y.to(device=device, dtype=torch.float32)
@@ -86,35 +84,27 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         preds = ((outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)).type(torch.float32)
         
         loss = criterion(preds, y)
-        
-        counter += 1
-        samples += y.size(0)
-        train_running_loss += loss.item()
-        # calculate the accuracy
-        train_running_correct += (torch.abs(preds - y) < 0.5).sum().item()
         # backprop
         loss.backward()
         optimizer.step()
 
-        #if counter % print_every == 0:
-        #    mid_epoch_train_loss = train_running_loss / samples
-        #    mid_epoch_train_acc = 100. * (train_running_correct / samples)
-        #    mid_epoch_val_loss, mid_epoch_val_acc = val_epoch(model, criterion, loader=loader_val_partial)
-        #    print(f"Training loss: {mid_epoch_train_loss:.3f}, training acc: {mid_epoch_train_acc:.3f} %")
-        #    print(f"Validation loss: {mid_epoch_val_loss:.3f}, validation acc: {mid_epoch_val_acc:.3f} %")
+        all_y.append(y.cpu().numpy())
+        all_preds.append(preds)
+    # loss, r2, accuracy for the complete epoch
+    epoch_loss = criterion(all_preds, all_y).item()
+    all_preds = np.concatenate(all_preds, axis=0)
+    all_y = np.concatenate(all_y, axis=0)
+    r2, _ = scipy.stats.pearsonr(all_preds, all_y)
+    r2 = r2 ** 2
+    epoch_acc = 100. * (torch.abs(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     
-    # loss and accuracy for the complete epoch
-    epoch_loss = train_running_loss / counter
-    epoch_acc = 100. * (train_running_correct / samples)
     return epoch_loss, epoch_acc
 
 def val_epoch(model, criterion, loader=loader_val):
     model.eval()
     print('Validating...')
-    val_running_loss = 0.0
-    val_running_correct = 0
-    samples = 0
-    counter = 0
+    all_preds = []
+    all_y = []
     with torch.no_grad():
         for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
             x = x.to(device=device, dtype=torch.float32)
@@ -124,20 +114,16 @@ def val_epoch(model, criterion, loader=loader_val):
             outputs = model(x)
             # calculate the loss
             preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
-            loss = criterion(preds, y)
             
-            counter += 1
-            samples += y.size(0)
-            val_running_loss += loss.item()
-            # calculate the accuracy
-            val_running_correct += (torch.abs(preds - y) < 0.5).sum().item()  
-            
-            #if samples > 16000:
-            #    print('preds: ', preds, 'y: ', y, 'preds - y: ', preds - y)
-    
-    # loss and accuracy for the complete epoch
-    epoch_loss = val_running_loss / counter
-    epoch_acc = 100. * (val_running_correct / samples)
+            all_y.append(y.cpu().numpy())
+            all_preds.append(preds)
+    # loss, r2, accuracy for the complete epoch
+    epoch_loss = criterion(all_preds, all_y).item()
+    all_preds = np.concatenate(all_preds, axis=0)
+    all_y = np.concatenate(all_y, axis=0)
+    r2, _ = scipy.stats.pearsonr(all_preds, all_y)
+    r2 = r2 ** 2
+    epoch_acc = 100. * (torch.abs(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, epoch_acc
 
 
