@@ -43,6 +43,10 @@ else:
     device = torch.device('cpu')
 print('using device:', device)
 
+# some constants
+num_classes = 167
+expectation_helper = torch.unsqueeze(torch.arange(num_classes), dim=0)
+
 # Constant to control how frequently we print train loss.
 print_every = 200
 tl_model = 'resnet18'
@@ -56,7 +60,7 @@ epochs = 10
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
 
-model = build_model(tl_model = tl_model, fine_tune=False, num_classes=167).to(device)
+model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss()
 params_info(model)
@@ -77,11 +81,17 @@ def train_epoch(model, optimizer, criterion, num_batches):
         # forward pass
         outputs = model(x)
         # calculate the loss
-        loss = criterion(outputs, y)
+        # One hots in case we want them
+        #y_one_hots = torch.zeros_like(outputs)
+        #y_one_hots[np.arange(y.size(dim=0)),y] = 1
+
+        # calculate expectation
+        preds = (outputs * expectation_helper).sum(dim=1)/outputs.sum(dim=1)
+        loss = criterion(preds, y)
         train_running_loss += loss.item()
         # calculate the accuracy
         _, preds = torch.max(outputs.data, 1)
-        train_running_correct += (preds == y).sum().item()
+        train_running_correct += ((preds - y) < 0.5).sum().item()
         # backrpop
         loss.backward()
         optimizer.step()
