@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import os
 import argparse
 
+import math
 import numpy as np
 import pandas as pd
 import sklearn
@@ -54,7 +55,7 @@ transform = data_transform()
 
 # Hyperparameters
 lr = 1e-3
-num_batches = 32
+batch_size = 32
 epochs = 10
 
 
@@ -65,15 +66,16 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss()
 params_info(model)
 
-def train_epoch(model, optimizer, criterion, num_batches):
+def train_epoch(model, optimizer, criterion, batch_size):
+    num_batches = int(math.ceil(train_Y.size(dim=0) / batch_size))
     model.train()
     print('Training...')
     train_running_loss = 0.0
     train_running_correct = 0
     counter = 0
     for t in range(num_batches):
-        x = train_X[t*num_batches:(t+1)*num_batches, :, :, :]
-        y = train_Y[t*num_batches:(t+1)*num_batches]
+        x = train_X[t*batch_size:(t+1)*batch_size]
+        y = train_Y[t*batch_size:(t+1)*batch_size]
         counter += 1
         x = x.to(device)
         y = y.to(device).type(torch.float32)
@@ -103,7 +105,8 @@ def train_epoch(model, optimizer, criterion, num_batches):
     epoch_acc = 100. * (train_running_correct / y.size(dim=0))
     return epoch_loss, epoch_acc
 
-def val_epoch(model, criterion, num_batches):
+def val_epoch(model, criterion, batch_size):
+    num_batches = int(math.ceil(val_Y.size(dim=0) / batch_size))
     model.eval()
     print('Validating...')
     val_running_loss = 0.0
@@ -111,8 +114,8 @@ def val_epoch(model, criterion, num_batches):
     counter = 0
     with torch.no_grad():
         for t in range(num_batches):
-            x = train_X[t*num_batches:(t+1)*num_batches, :, :, :]
-            y = train_Y[t*num_batches:(t+1)*num_batches]
+            x = train_X[t*batch_size:(t+1)*batch_size]
+            y = train_Y[t*batch_size:(t+1)*batch_size]
             counter += 1
             x = x.to(device)
             y = y.to(device)    
