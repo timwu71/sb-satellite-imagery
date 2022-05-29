@@ -56,7 +56,7 @@ epochs = 1
 
 model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
 optimizer = optim.Adam(model.parameters(), lr=lr)
-criterion = nn.MSELoss()
+criterion = nn.L1Loss()
 params_info(model)
 
 print('Fetching Dataloaders...')
@@ -70,9 +70,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     train_running_loss = 0.0
     train_running_correct = 0
     samples = 0
-    counter = 0
     for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
-        counter += 1
         x = x.to(device=device, dtype=torch.float32)
         y = y.to(device=device, dtype=torch.float32)
         optimizer.zero_grad()
@@ -129,6 +127,9 @@ def val_epoch(model, criterion, loader=loader_val):
             val_running_loss += loss.item()
             # calculate the accuracy
             val_running_correct += ((preds - y) < 0.5).sum().item()  
+            
+            if samples > 16000:
+                print('preds: ', preds, 'y: ', y, 'preds - y: ', preds - y)
     
     # loss and accuracy for the complete epoch
     epoch_loss = val_running_loss / samples
