@@ -122,7 +122,7 @@ def val_epoch(model, criterion, loader=loader_val):
             loss = criterion(preds, y)
 
             all_y.append(y.cpu().numpy())
-            all_preds.append(preds)
+            all_preds.append(preds.cpu().numpy())
             epoch_loss += loss.item()
             counter += 1
     # loss, r2, accuracy for the complete epoch
