@@ -86,7 +86,7 @@ def train_epoch(model, optimizer, criterion, num_batches):
         #y_one_hots[np.arange(y.size(dim=0)),y] = 1
 
         # calculate expectation
-        preds = (outputs * expectation_helper).sum(dim=1)/outputs.sum(dim=1)
+        preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
         loss = criterion(preds, y)
         train_running_loss += loss.item()
         # calculate the accuracy
@@ -117,11 +117,11 @@ def val_epoch(model, criterion, num_batches):
             # forward pass
             outputs = model(x)
             # calculate the loss
+            preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
             loss = criterion(outputs, x)
             val_running_loss += loss.item()
             # calculate the accuracy
-            _, preds = torch.max(outputs.data, 1)
-            val_running_correct += (preds == y).sum().item()      
+            val_running_correct += ((preds - y) < 0.5).sum().item()  
     
     # loss and accuracy for the complete epoch
     epoch_loss = val_running_loss / counter
