@@ -26,8 +26,14 @@ import torchvision.models as models
 
 from models_tl import *
 from utils_tl import *
-from dataloader import *
+from data_tl_brute_force import *
 
+
+train_X, train_Y, val_X, val_Y, test_X, test_Y = load_data(data='random')
+train_X = train_X[:,:3,:,:]
+val_X = val_X[:,:3,:,:]
+test_X = test_X[:,:3,:,:]
+print('finished loading data.')
 
 USE_GPU = True
 dtype = torch.float32 
@@ -60,19 +66,19 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss()
 params_info(model)
 
-print('Fetching Dataloaders...')
-loader_train, loader_val, loader_test = get_dataloaders()
-
-def train_epoch(model, optimizer, criterion, loader=loader_train):
+def train_epoch(model, optimizer, criterion, batch_size):
+    num_batches = int(math.ceil(train_Y.size(dim=0) / batch_size))
     model.train()
     print('Training...')
     train_running_loss = 0.0
     train_running_correct = 0
     counter = 0
-    for (x, y) in loader:
+    for t in range(num_batches):
+        x = train_X[t*batch_size:(t+1)*batch_size]
+        y = train_Y[t*batch_size:(t+1)*batch_size]
         counter += 1
-        x = x.to(device=device, dtype=torch.float32)
-        y = y.to(device=device, dtype=torch.float32)
+        x = x.to(device)
+        y = y.to(device).type(torch.float32)
         optimizer.zero_grad()
         # forward pass
         outputs = model(x)
@@ -99,16 +105,17 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     epoch_acc = 100. * (train_running_correct / y.size(dim=0))
     return epoch_loss, epoch_acc
 
-def val_epoch(model, criterion, loader=loader_val):
+def val_epoch(model, criterion, batch_size):
+    num_batches = int(math.ceil(val_Y.size(dim=0) / batch_size))
     model.eval()
     print('Validating...')
     val_running_loss = 0.0
     val_running_correct = 0
     counter = 0
     with torch.no_grad():
-        for (x, y) in loader:
-            x = x.to(device=device, dtype=torch.float32)
-            y = y.to(device=device, dtype=torch.float32)
+        for t in range(num_batches):
+            x = train_X[t*batch_size:(t+1)*batch_size]
+            y = train_Y[t*batch_size:(t+1)*batch_size]
             counter += 1
             x = x.to(device)
             y = y.to(device)    
@@ -133,8 +140,8 @@ train_acc, valid_acc = [], []
 # start the training
 for epoch in range(epochs):
     print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-    train_epoch_loss, train_epoch_acc = train_epoch(model, optimizer, criterion, loader=loader_train)
-    valid_epoch_loss, valid_epoch_acc = val_epoch(model,  criterion, loader=loader_val)
+    train_epoch_loss, train_epoch_acc = train_epoch(model, optimizer, criterion, batch_size=batch_size)
+    valid_epoch_loss, valid_epoch_acc = val_epoch(model,  criterion, batch_size=batch_size)
     train_loss.append(train_epoch_loss)
     valid_loss.append(valid_epoch_loss)
     train_acc.append(train_epoch_acc)
@@ -143,10 +150,8 @@ for epoch in range(epochs):
     print(f"Validation loss: {valid_epoch_loss:.3f}, validation acc: {valid_epoch_acc:.3f}")
     print('-'*50)
 
-print("all train losses: ", train_loss)
-print("all train accuracies: ", train_acc)
-print("all val losses: ", valid_loss)
-print("all val accuracies: ", valid_acc)
+
+
 
 
 
