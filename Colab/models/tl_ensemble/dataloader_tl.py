@@ -24,6 +24,8 @@ import torchvision.transforms as T
 
 import torch.nn.functional as F  # useful stateless functions
 import scipy
+
+from PIL import Image
 # Note: when testing on your own may have to change this to reset your python path
 from utils_tl import *
 
@@ -85,7 +87,7 @@ class SustainBenchDataset(Dataset):
           image = np.load(df_row['path'])['x'][self.bands, :, :]
         
         label = df_row[self.category]
-
+        image = Image.fromarray(image)
         # Apply transforms if needed
         if self.transform:
             image = self.transform(image)

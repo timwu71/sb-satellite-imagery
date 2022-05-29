@@ -26,7 +26,7 @@ import torchvision.models as models
 
 from models_tl import *
 from utils_tl import *
-from dataloader import *
+from dataloader_tl import *
 
 
 USE_GPU = True
@@ -88,7 +88,6 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         #print("LOSS DTYPE: ", loss.dtype, "\n\n\n\n")
         train_running_loss += loss.item()
         # calculate the accuracy
-        _, preds = torch.max(outputs.data, 1)
         train_running_correct += ((preds - y) < 0.5).sum().item()
         # backrpop
         loss.backward()
