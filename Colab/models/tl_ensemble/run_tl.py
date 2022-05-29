@@ -76,7 +76,7 @@ def train_epoch(model, optimizer, criterion, num_batches):
         y = train_Y[t*num_batches:(t+1)*num_batches]
         counter += 1
         x = x.to(device)
-        y = y.to(device)
+        y = y.to(device).type(torch.float32)
         optimizer.zero_grad()
         # forward pass
         outputs = model(x)
@@ -86,8 +86,10 @@ def train_epoch(model, optimizer, criterion, num_batches):
         #y_one_hots[np.arange(y.size(dim=0)),y] = 1
 
         # calculate expectation
-        preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
+        preds = ((outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)).type(torch.float32)
+        
         loss = criterion(preds, y)
+        #print("LOSS DTYPE: ", loss.dtype, "\n\n\n\n")
         train_running_loss += loss.item()
         # calculate the accuracy
         _, preds = torch.max(outputs.data, 1)
@@ -118,7 +120,7 @@ def val_epoch(model, criterion, num_batches):
             outputs = model(x)
             # calculate the loss
             preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
-            loss = criterion(outputs, x)
+            loss = criterion(preds, y)
             val_running_loss += loss.item()
             # calculate the accuracy
             val_running_correct += ((preds - y) < 0.5).sum().item()  
