@@ -140,8 +140,8 @@ train_acc, valid_acc = [], []
 # start the training
 for epoch in range(epochs):
     print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-    train_epoch_loss, train_epoch_acc = train_epoch(model, optimizer, criterion, num_batches=num_batches)
-    valid_epoch_loss, valid_epoch_acc = val_epoch(model,  criterion, num_batches=num_batches)
+    train_epoch_loss, train_epoch_acc = train_epoch(model, optimizer, criterion, batch_size=batch_size)
+    valid_epoch_loss, valid_epoch_acc = val_epoch(model,  criterion, batch_size=batch_size)
     train_loss.append(train_epoch_loss)
     valid_loss.append(valid_epoch_loss)
     train_acc.append(train_epoch_acc)
