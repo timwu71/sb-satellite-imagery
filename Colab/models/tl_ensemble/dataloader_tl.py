@@ -49,7 +49,7 @@ SPLITS['trainval'] = SPLITS['train'] + SPLITS['val']
 
 #partial splits
 
-SPLITS['train_partial'] = SPLITS['train'][:5]
+SPLITS['train_partial'] = SPLITS['train'][:7]
 SPLITS['val_partial'] = SPLITS['val'][:5]
 SPLITS['test_partial'] = SPLITS['test'][:5]
 SPLITS['trainval_partial'] = SPLITS['train_partial'] + SPLITS['val_partial']
@@ -96,7 +96,7 @@ class SustainBenchDataset(Dataset):
 
         return image, label
 
-def get_dataloaders():
+def get_dataloaders(batch_size, num_workers):
     train_dataset = SustainBenchDataset(
         annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
         img_dir='/home/timwu0/231nproj/data/',
@@ -127,10 +127,10 @@ def get_dataloaders():
         transform=data_transform()
     )
 
-    loader_train = DataLoader(train_dataset, batch_size=64, num_workers=64)
+    loader_train = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers)
 
-    loader_val = DataLoader(val_dataset, batch_size=64, num_workers=64)
+    loader_val = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers)
 
-    loader_test = DataLoader(test_dataset, batch_size=64, num_workers=64)
+    loader_test = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers)
 
     return loader_train, loader_val, loader_test

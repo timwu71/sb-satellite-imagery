@@ -41,15 +41,14 @@ print('using device:', device)
 # some constants
 num_classes = 167
 expectation_helper = torch.unsqueeze(torch.arange(num_classes), dim=0)
-
-# Constant to control how frequently we print train loss.
 print_every = 200
 tl_model = 'resnet18'
 transform = data_transform()
+num_workers = 90
 
 # Hyperparameters
 lr = 1e-3
-batch_size = 32
+batch_size = 64
 epochs = 10
 
 
@@ -61,7 +60,7 @@ criterion = nn.MSELoss()
 params_info(model)
 
 print('Fetching Dataloaders...')
-loader_train, loader_val, loader_test = get_dataloaders()
+loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers)
 
 def train_epoch(model, optimizer, criterion, loader=loader_train):
     model.train()
@@ -69,7 +68,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     train_running_loss = 0.0
     train_running_correct = 0
     counter = 0
-    for (x, y) in loader:
+    for (x, y) in tqdm(loader):
         counter += 1
         x = x.to(device=device, dtype=torch.float32)
         y = y.to(device=device, dtype=torch.float32)
@@ -94,7 +93,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         optimizer.step()
     
     # loss and accuracy for the complete epoch
-    epoch_loss = train_running_loss / counter
+    epoch_loss = (train_running_loss / counter) / batch_size
     epoch_acc = 100. * (train_running_correct / y.size(dim=0))
     return epoch_loss, epoch_acc
 
@@ -105,7 +104,7 @@ def val_epoch(model, criterion, loader=loader_val):
     val_running_correct = 0
     counter = 0
     with torch.no_grad():
-        for (x, y) in loader:
+        for (x, y) in tqdm(loader):
             x = x.to(device=device, dtype=torch.float32)
             y = y.to(device=device, dtype=torch.float32)
             counter += 1
@@ -121,7 +120,7 @@ def val_epoch(model, criterion, loader=loader_val):
             val_running_correct += ((preds - y) < 0.5).sum().item()  
     
     # loss and accuracy for the complete epoch
-    epoch_loss = val_running_loss / counter
+    epoch_loss = (val_running_loss / counter) / batch_size
     epoch_acc = 100. * (val_running_correct / y.size(dim=0))
     return epoch_loss, epoch_acc
 
@@ -138,14 +137,14 @@ for epoch in range(epochs):
     valid_loss.append(valid_epoch_loss)
     train_acc.append(train_epoch_acc)
     valid_acc.append(valid_epoch_acc)
-    print(f"Training loss: {train_epoch_loss:.3f}, training acc: {train_epoch_acc:.3f}")
-    print(f"Validation loss: {valid_epoch_loss:.3f}, validation acc: {valid_epoch_acc:.3f}")
+    print(f"Training loss: {train_epoch_loss:.3f}, training acc: {train_epoch_acc:.3f} %")
+    print(f"Validation loss: {valid_epoch_loss:.3f}, validation acc: {valid_epoch_acc:.3f} %")
     print('-'*50)
 
-print("all train losses: ", train_loss)
-print("all train accuracies: ", train_acc)
-print("all val losses: ", valid_loss)
-print("all val accuracies: ", valid_acc)
+#print("all train losses: ", train_loss)
+#print("all train accuracies: ", train_acc)
+#print("all val losses: ", valid_loss)
+#print("all val accuracies: ", valid_acc)
 
 
 
