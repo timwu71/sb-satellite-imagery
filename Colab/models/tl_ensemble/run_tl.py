@@ -69,6 +69,8 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     print('Training...')
     all_preds = []
     all_y = []
+    epoch_loss = 0
+    counter = 0
     for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
         x = x.to(device=device, dtype=torch.float32)
         y = y.to(device=device, dtype=torch.float32)
@@ -81,8 +83,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         #y_one_hots[np.arange(y.size(dim=0)),y] = 1
 
         # calculate expectation
-        preds = ((outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)).type(torch.float32)
-        
+        preds = ((outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)).type(torch.float32)     
         loss = criterion(preds, y)
         # backprop
         loss.backward()
@@ -90,8 +91,10 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
 
         all_y.append(y.cpu().numpy())
         all_preds.append(preds)
+        epoch_loss += loss.item()
+        counter += 1
     # loss, r2, accuracy for the complete epoch
-    epoch_loss = criterion(all_preds, all_y).item()
+    epoch_loss /= counter
     all_preds = np.concatenate(all_preds, axis=0)
     all_y = np.concatenate(all_y, axis=0)
     r2, _ = scipy.stats.pearsonr(all_preds, all_y)
@@ -105,6 +108,8 @@ def val_epoch(model, criterion, loader=loader_val):
     print('Validating...')
     all_preds = []
     all_y = []
+    epoch_loss = 0
+    counter = 0
     with torch.no_grad():
         for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
             x = x.to(device=device, dtype=torch.float32)
@@ -114,11 +119,14 @@ def val_epoch(model, criterion, loader=loader_val):
             outputs = model(x)
             # calculate the loss
             preds = (outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)
-            
+            loss = criterion(preds, y)
+
             all_y.append(y.cpu().numpy())
             all_preds.append(preds)
+            epoch_loss += loss.item()
+            counter += 1
     # loss, r2, accuracy for the complete epoch
-    epoch_loss = criterion(all_preds, all_y).item()
+    epoch_loss /= counter
     all_preds = np.concatenate(all_preds, axis=0)
     all_y = np.concatenate(all_y, axis=0)
     r2, _ = scipy.stats.pearsonr(all_preds, all_y)
