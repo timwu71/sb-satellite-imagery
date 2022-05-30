@@ -57,7 +57,7 @@ epochs = 15
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
 print('Fetching Dataloaders...')
-loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=True)
+loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False)
 _, loader_val_partial, _ = get_dataloaders(batch_size, num_workers, partial=True)
 
 
@@ -158,7 +158,7 @@ def run_model(lr, weight_decay):
         print(f"Validation loss: {valid_epoch_loss:.4f}, validation r^2: {valid_epoch_r2:.4f} validation acc: {valid_epoch_acc:.4f}%")
         print('-'*75)
     performance = max(valid_r2)
-    print(f"Finished training with learning rate {lr:.6f}. Best val r^2: {performance:.4f}")
+    print(f"Finished training with weight decay {weight_decay:.7f}. Best val r^2: {performance:.4f}")
     return performance, model
 
 # HYPERPARAMETER TUNING
