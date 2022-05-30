@@ -47,7 +47,7 @@ transform = data_transform()
 num_workers = 84
 
 # Hyperparameters
-lrs = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
+lrs = [5e-4, 1e-3, 2e-3, 4e-3]
 batch_size = 64
 epochs = 1
 
@@ -151,11 +151,11 @@ def run_model(lr):
         train_acc.append(train_epoch_acc)
         valid_acc.append(valid_epoch_acc)
         print(f"Epoch {epoch+1} finished. Final epoch results:")
-        print(f"Training loss: {train_epoch_loss:.3f}, training r^2: {train_epoch_r2:.3f} training acc: {train_epoch_acc:.3f}%")
-        print(f"Validation loss: {valid_epoch_loss:.3f}, validation r^2: {valid_epoch_r2:.3f} validation acc: {valid_epoch_acc:.3f}%")
+        print(f"Training loss: {train_epoch_loss:.4f}, training r^2: {train_epoch_r2:.4f} training acc: {train_epoch_acc:.4f}%")
+        print(f"Validation loss: {valid_epoch_loss:.4f}, validation r^2: {valid_epoch_r2:.4f} validation acc: {valid_epoch_acc:.4f}%")
         print('-'*75)
     performance = max(valid_r2)
-    print(f"Finished training with learning rate {lr:.3f}. Best val r^2: {performance:.3f}")
+    print(f"Finished training with learning rate {lr:.6f}. Best val r^2: {performance:.4f}")
     return performance, model
 
 # HYPERPARAMETER TUNING
@@ -163,13 +163,14 @@ def run_model(lr):
 best_model = None
 best_r2 = 0
 best_lr = None
+print("Starting hyperparameter tuning...")
 for lr in lrs:
     r2, model = run_model(lr)
     if r2 > best_r2:
         best_r2 = r2
         best_model = model
         best_lr = lr
-print(f"Best learning rate is {best_lr:.3f}. Achieved val r^2 of: {best_r2:.3f}")
+print(f"Best learning rate is {best_lr:.6f}. Achieved val r^2 of: {best_r2:.3f}")
 
 #print("all train losses: ", train_loss)
 #print("all train accuracies: ", train_acc)
