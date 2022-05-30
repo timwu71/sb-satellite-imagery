@@ -47,9 +47,12 @@ transform = data_transform()
 num_workers = 84
 
 # Hyperparameters
-lrs = [5e-4, 1e-3, 2e-3, 4e-3]
+#lrs = [5e-4, 1e-3, 2e-3, 4e-3]
+lr = 1e-3
 batch_size = 64
-epochs = 3
+# l2 regularization
+weight_decays = [0, 1e-6, 1e-5, 1e-4]
+epochs = 15
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
@@ -129,13 +132,13 @@ def val_epoch(model, criterion, loader=loader_val):
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, r2, epoch_acc
 
-def run_model(lr):
+def run_model(lr, weight_decay):
 # lists to keep track of losses and accuracies
     train_loss, valid_loss = [], []
     train_r2, valid_r2 = [], []
     train_acc, valid_acc = [], []
     model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.L1Loss()
     params_info(model)
 
@@ -162,15 +165,15 @@ def run_model(lr):
 
 best_model = None
 best_r2 = 0
-best_lr = None
+best_weight_decay = None
 print("Starting hyperparameter tuning...")
-for lr in lrs:
-    r2, model = run_model(lr)
+for weight_decay in weight_decays:
+    r2, model = run_model(lr, weight_decay)
     if r2 > best_r2:
         best_r2 = r2
         best_model = model
-        best_lr = lr
-print(f"Best learning rate is {best_lr:.6f}. Achieved val r^2 of: {best_r2:.4f}")
+        best_weight_decay = weight_decay
+print(f"Best weight decay is {best_weight_decay:.7f}. Achieved val r^2 of: {best_r2:.4f}")
 
 #print("all train losses: ", train_loss)
 #print("all train accuracies: ", train_acc)
