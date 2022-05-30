@@ -47,18 +47,12 @@ transform = data_transform()
 num_workers = 84
 
 # Hyperparameters
-lr = 1e-3
+lrs = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
 batch_size = 64
 epochs = 1
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
-
-model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
-optimizer = optim.Adam(model.parameters(), lr=lr)
-criterion = nn.L1Loss()
-params_info(model)
-
 print('Fetching Dataloaders...')
 loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False)
 _, loader_val_partial, _ = get_dataloaders(batch_size, num_workers, partial=True)
@@ -135,26 +129,47 @@ def val_epoch(model, criterion, loader=loader_val):
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, r2, epoch_acc
 
-
+def run_model(lr):
 # lists to keep track of losses and accuracies
-train_loss, valid_loss = [], []
-train_r2, valid_r2 = [], []
-train_acc, valid_acc = [], []
-# start the training
-for epoch in range(epochs):
-    print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-    train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader=loader_train)
-    valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader=loader_val)
-    train_loss.append(train_epoch_loss)
-    valid_loss.append(valid_epoch_loss)
-    train_r2.append(train_epoch_r2)
-    valid_r2.append(valid_epoch_r2)
-    train_acc.append(train_epoch_acc)
-    valid_acc.append(valid_epoch_acc)
-    print(f"Epoch {epoch+1} finished. Final epoch results:")
-    print(f"Training loss: {train_epoch_loss:.3f}, training r^2: {train_epoch_r2:.3f} training acc: {train_epoch_acc:.3f}%")
-    print(f"Validation loss: {valid_epoch_loss:.3f}, validation r^2: {valid_epoch_r2:.3f} validation acc: {valid_epoch_acc:.3f}%")
-    print('-'*75)
+    train_loss, valid_loss = [], []
+    train_r2, valid_r2 = [], []
+    train_acc, valid_acc = [], []
+    model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.L1Loss()
+    params_info(model)
+
+    # start the training
+    for epoch in range(epochs):
+        print(f"[INFO]: Epoch {epoch+1} of {epochs}")
+        train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader=loader_train)
+        valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader=loader_val)
+        train_loss.append(train_epoch_loss)
+        valid_loss.append(valid_epoch_loss)
+        train_r2.append(train_epoch_r2)
+        valid_r2.append(valid_epoch_r2)
+        train_acc.append(train_epoch_acc)
+        valid_acc.append(valid_epoch_acc)
+        print(f"Epoch {epoch+1} finished. Final epoch results:")
+        print(f"Training loss: {train_epoch_loss:.3f}, training r^2: {train_epoch_r2:.3f} training acc: {train_epoch_acc:.3f}%")
+        print(f"Validation loss: {valid_epoch_loss:.3f}, validation r^2: {valid_epoch_r2:.3f} validation acc: {valid_epoch_acc:.3f}%")
+        print('-'*75)
+    performance = max(valid_r2)
+    print(f"Finished training with learning rate {lr:.3f}. Best val r^2: {performance:.3f}")
+    return performance, model
+
+# HYPERPARAMETER TUNING
+
+best_model = None
+best_r2 = 0
+best_lr = None
+for lr in lrs:
+    r2, model = run_model(lr)
+    if r2 > best_r2:
+        best_r2 = r2
+        best_model = model
+        best_lr = lr
+print(f"Best learning rate is {best_lr:.3f}. Achieved val r^2 of: {best_r2:.3f}")
 
 #print("all train losses: ", train_loss)
 #print("all train accuracies: ", train_acc)
