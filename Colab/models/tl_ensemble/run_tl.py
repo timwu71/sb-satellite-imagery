@@ -90,7 +90,8 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
         optimizer.step()
 
         all_y.append(y.cpu().numpy())
-        all_preds.append(preds)
+        preds_numpy = preds.detach().cpu().numpy()
+        all_preds.append(preds_numpy)
         epoch_loss += loss.item()
         counter += 1
     # loss, r2, accuracy for the complete epoch
@@ -99,9 +100,9 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     all_y = np.concatenate(all_y, axis=0)
     r2, _ = scipy.stats.pearsonr(all_preds, all_y)
     r2 = r2 ** 2
-    epoch_acc = 100. * (torch.abs(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
+    epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     
-    return epoch_loss, epoch_acc
+    return epoch_loss, r2, epoch_acc
 
 def val_epoch(model, criterion, loader=loader_val):
     model.eval()
@@ -131,25 +132,28 @@ def val_epoch(model, criterion, loader=loader_val):
     all_y = np.concatenate(all_y, axis=0)
     r2, _ = scipy.stats.pearsonr(all_preds, all_y)
     r2 = r2 ** 2
-    epoch_acc = 100. * (torch.abs(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
-    return epoch_loss, epoch_acc
+    epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
+    return epoch_loss, r2, epoch_acc
 
 
 # lists to keep track of losses and accuracies
 train_loss, valid_loss = [], []
+train_r2, valid_r2 = [], []
 train_acc, valid_acc = [], []
 # start the training
 for epoch in range(epochs):
     print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-    train_epoch_loss, train_epoch_acc = train_epoch(model, optimizer, criterion, loader=loader_train)
-    valid_epoch_loss, valid_epoch_acc = val_epoch(model,  criterion, loader=loader_val)
+    train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader=loader_train)
+    valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader=loader_val)
     train_loss.append(train_epoch_loss)
     valid_loss.append(valid_epoch_loss)
+    train_r2.append(train_epoch_r2)
+    valid_r2.append(valid_epoch_r2)
     train_acc.append(train_epoch_acc)
     valid_acc.append(valid_epoch_acc)
     print(f"Epoch {epoch+1} finished. Final epoch results:")
-    print(f"Training loss: {train_epoch_loss:.3f}, training acc: {train_epoch_acc:.3f}%")
-    print(f"Validation loss: {valid_epoch_loss:.3f}, validation acc: {valid_epoch_acc:.3f}%")
+    print(f"Training loss: {train_epoch_loss:.3f}, training r^2: {train_epoch_r2:.3f} training acc: {train_epoch_acc:.3f}%")
+    print(f"Validation loss: {valid_epoch_loss:.3f}, validation r^2: {valid_epoch_r2:.3f} validation acc: {valid_epoch_acc:.3f}%")
     print('-'*75)
 
 #print("all train losses: ", train_loss)
