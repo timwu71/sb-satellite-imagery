@@ -49,7 +49,7 @@ num_workers = 84
 # Hyperparameters
 lrs = [5e-4, 1e-3, 2e-3, 4e-3]
 batch_size = 64
-epochs = 1
+epochs = 3
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
@@ -170,7 +170,7 @@ for lr in lrs:
         best_r2 = r2
         best_model = model
         best_lr = lr
-print(f"Best learning rate is {best_lr:.6f}. Achieved val r^2 of: {best_r2:.3f}")
+print(f"Best learning rate is {best_lr:.6f}. Achieved val r^2 of: {best_r2:.4f}")
 
 #print("all train losses: ", train_loss)
 #print("all train accuracies: ", train_acc)
