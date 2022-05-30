@@ -54,7 +54,7 @@ epochs = 3
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
 print('Fetching Dataloaders...')
-loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False)
+loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=True)
 _, loader_val_partial, _ = get_dataloaders(batch_size, num_workers, partial=True)
 
 
