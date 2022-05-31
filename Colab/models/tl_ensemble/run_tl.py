@@ -45,7 +45,7 @@ print_every = 500
 transform = data_transform()
 num_workers = 84
 #BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
-BANDS = [6, 3, 2]
+BANDS = [[6, 3, 2], [4, 3, 0]]
 
 # Hyperparameters
 tl_model = 'resnet18'
@@ -54,7 +54,7 @@ lr = 1e-3
 batch_size = 64
 # l2 regularization
 weight_decay = 1e-3
-epochs = 15
+epochs = 20
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
