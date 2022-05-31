@@ -45,7 +45,8 @@ print_every = 500
 transform = data_transform()
 num_workers = 84
 #BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
-BANDS = [6, 3, 2]
+#BANDS = [[6, 3, 2], [4, 3, 0]]
+BANDS = [[2, 1, 0]]
 
 # Hyperparameters
 tl_model = 'resnet18'
@@ -54,7 +55,7 @@ lr = 1e-3
 batch_size = 64
 # l2 regularization
 weight_decay = 1e-3
-epochs = 15
+epochs = 20
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
@@ -139,6 +140,12 @@ def run_model(lr, weight_decay, tl_model, bands):
     train_r2, valid_r2 = [], []
     train_acc, valid_acc = [], []
     model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
+    ct = 0
+    for child in model.children():
+        ct += 1
+        if ct <= 15:
+            for param in child.parameters():
+                param.requires_grad = False
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.L1Loss()
     params_info(model)
@@ -174,7 +181,7 @@ for bands in BANDS:
         best_r2 = r2
         best_model = model
         #best_tl_model = tl_model
-print(f"Best bands are {bands}. Achieved val r^2 of: {best_r2:.4f}")
+print(f"Achieved val r^2 of: {best_r2:.4f}")
 
 print("Saving best model...")
 

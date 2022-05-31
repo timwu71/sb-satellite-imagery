@@ -23,6 +23,8 @@ import torch.nn.functional as F  # useful stateless functions
 from torch.utils.data import Subset
 from torchvision import datasets, transforms
 import torchvision.models as models
+from torch.autograd import Variable
+
 
 from models_tl import *
 from utils_tl import *
@@ -44,7 +46,7 @@ expectation_helper = torch.unsqueeze(torch.arange(num_classes), dim=0)
 print_every = 500
 transform = data_transform()
 num_workers = 84
-BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
+BANDS = [[2, 1, 0], [6, 3, 2], [4, 3, 0]]
 
 # Hyperparameters
 tl_model = 'resnet18'
@@ -59,7 +61,7 @@ epochs = 5
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
 
 
-def train_epoch(models, optimizer, criterion, loader):
+def train_epoch(models, optimizer, criterion, loader, ensemble_weights):
     for model in models:
         model.train()
     print('Training...')
@@ -67,6 +69,7 @@ def train_epoch(models, optimizer, criterion, loader):
     all_y = []
     epoch_loss = 0
     counter = 0
+    w1, w2, w3 = ensemble_weights[0], ensemble_weights[1], ensemble_weights[2]
     for (x, y) in tqdm(loader, bar_format='{l_bar}{bar:40}{r_bar}{bar:-40b}'):
         x = x.to(device=device, dtype=torch.float32)
         y = y.to(device=device, dtype=torch.float32)
@@ -79,10 +82,12 @@ def train_epoch(models, optimizer, criterion, loader):
         # One hots in case we want them
         #y_one_hots = torch.zeros_like(outputs)
         #y_one_hots[np.arange(y.size(dim=0)),y] = 1
-
+        preds = []
         # calculate expectation
-        preds = ((outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)).type(torch.float32)     
-        loss = criterion(preds, y)
+        for output in outputs:
+            preds.append(((outputs * expectation_helper.to(device)).sum(dim=1)/outputs.sum(dim=1)).type(torch.float32))    
+        pred = w1 * preds[0] + w2 * preds[1] + w3 * preds[2]
+        loss = criterion(pred, y)
         # backprop
         loss.backward()
         optimizer.step()
@@ -100,9 +105,10 @@ def train_epoch(models, optimizer, criterion, loader):
     r2 = r2 ** 2
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     
-    return epoch_loss, r2, epoch_acc
+    ensemble_weights = w1, w2, w3
+    return epoch_loss, r2, epoch_acc, ensemble_weights
 
-def val_epoch(model, criterion, loader):
+def val_epoch(model, criterion, loader, ensemble_weights):
     model.eval()
     print('Validating...')
     all_preds = []
@@ -147,6 +153,9 @@ def run_model(lr, weight_decay, tl_model, all_bands):
         models.append(model)
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.L1Loss()
+
+    w1 = Variable(torch.randn(1).type(dtype=torch.float32), requires_grad=True)
+
     
     # start the training
     for epoch in range(epochs):
