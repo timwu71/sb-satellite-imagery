@@ -26,6 +26,11 @@ import torchvision.models as models
 def build_model(tl_model, fine_tune=True, num_classes=167):
     if tl_model == 'resnet18':
         model = models.resnet18(pretrained=True)
+    elif tl_model == 'resnet34':
+        model = models.resnet34(pretrained=True)
+    elif tl_model == 'resnet50':
+        model = models.resnet50(pretrained=True)
+
     if fine_tune:
         for params in model.parameters():
             params.requires_grad = True

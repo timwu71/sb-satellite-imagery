@@ -42,17 +42,17 @@ print('using device:', device)
 num_classes = 167
 expectation_helper = torch.unsqueeze(torch.arange(num_classes), dim=0)
 print_every = 500
-tl_model = 'resnet18'
 transform = data_transform()
 num_workers = 84
 
 # Hyperparameters
+tl_models = ['resnet18', 'resnet34', 'resnet50']
 #lrs = [5e-4, 1e-3, 2e-3, 4e-3]
 lr = 1e-3
 batch_size = 64
 # l2 regularization
-weight_decays = [0, 1e-6, 1e-5, 1e-4]
-epochs = 15
+weight_decay = 0
+epochs = 5
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
@@ -132,7 +132,7 @@ def val_epoch(model, criterion, loader=loader_val):
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, r2, epoch_acc
 
-def run_model(lr, weight_decay):
+def run_model(lr, weight_decay, tl_model):
 # lists to keep track of losses and accuracies
     train_loss, valid_loss = [], []
     train_r2, valid_r2 = [], []
@@ -158,22 +158,22 @@ def run_model(lr, weight_decay):
         print(f"Validation loss: {valid_epoch_loss:.4f}, validation r^2: {valid_epoch_r2:.4f} validation acc: {valid_epoch_acc:.4f}%")
         print('-'*75)
     performance = max(valid_r2)
-    print(f"Finished training with weight decay {weight_decay:.7f}. Best val r^2: {performance:.4f}")
+    print(f"Finished training with model {tl_model}. Best val r^2: {performance:.4f}")
     return performance, model
 
 # HYPERPARAMETER TUNING
 
 best_model = None
 best_r2 = 0
-best_weight_decay = None
+best_tl_model = None
 print("Starting hyperparameter tuning...")
-for weight_decay in weight_decays:
-    r2, model = run_model(lr, weight_decay)
+for tl_model in tl_models:
+    r2, model = run_model(lr, weight_decay, tl_model)
     if r2 > best_r2:
         best_r2 = r2
         best_model = model
-        best_weight_decay = weight_decay
-print(f"Best weight decay is {best_weight_decay:.7f}. Achieved val r^2 of: {best_r2:.4f}")
+        best_tl_model = tl_model
+print(f"Best weight decay is {best_tl_model}. Achieved val r^2 of: {best_r2:.4f}")
 
 #print("all train losses: ", train_loss)
 #print("all train accuracies: ", train_acc)
