@@ -52,7 +52,7 @@ lr = 1e-3
 batch_size = 64
 # l2 regularization
 weight_decays = [0, 1e-6, 1e-5, 1e-4]
-epochs = 15
+epochs = 30
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
