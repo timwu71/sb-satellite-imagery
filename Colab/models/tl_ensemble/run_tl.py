@@ -55,7 +55,7 @@ lr = 1e-3
 batch_size = 64
 # l2 regularization
 weight_decay = 1e-3
-epochs = 20
+epochs = 10
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
@@ -143,7 +143,7 @@ def run_model(lr, weight_decay, tl_model, bands):
     ct = 0
     for child in model.children():
         ct += 1
-        if ct <= 15:
+        if ct <= 9:
             for param in child.parameters():
                 param.requires_grad = False
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
