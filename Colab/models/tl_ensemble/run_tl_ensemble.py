@@ -44,8 +44,7 @@ expectation_helper = torch.unsqueeze(torch.arange(num_classes), dim=0)
 print_every = 500
 transform = data_transform()
 num_workers = 84
-#BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
-BANDS = [6, 3, 2]
+BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
 
 # Hyperparameters
 tl_model = 'resnet18'
@@ -54,14 +53,15 @@ lr = 1e-3
 batch_size = 64
 # l2 regularization
 weight_decay = 1e-3
-epochs = 15
+epochs = 5
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
 
 
-def train_epoch(model, optimizer, criterion, loader):
-    model.train()
+def train_epoch(models, optimizer, criterion, loader):
+    for model in models:
+        model.train()
     print('Training...')
     all_preds = []
     all_y = []
@@ -72,7 +72,9 @@ def train_epoch(model, optimizer, criterion, loader):
         y = y.to(device=device, dtype=torch.float32)
         optimizer.zero_grad()
         # forward pass
-        outputs = model(x)
+        outputs = []
+        for model in models:
+            outputs.append(model(x))
         # calculate the loss
         # One hots in case we want them
         #y_one_hots = torch.zeros_like(outputs)
@@ -131,23 +133,26 @@ def val_epoch(model, criterion, loader):
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, r2, epoch_acc
 
-def run_model(lr, weight_decay, tl_model, bands):
+def run_model(lr, weight_decay, tl_model, all_bands):
 # lists to keep track of losses and accuracies
-    print('Fetching Dataloaders...')
-    loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
     train_loss, valid_loss = [], []
     train_r2, valid_r2 = [], []
     train_acc, valid_acc = [], []
-    model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
+    models = []
+    print('Fetching Dataloaders...')
+    for bands in all_bands:
+        loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
+        model = build_model(tl_model = tl_model, fine_tune=False, num_classes=num_classes).to(device)
+        params_info(model)
+        models.append(model)
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.L1Loss()
-    params_info(model)
-
+    
     # start the training
     for epoch in range(epochs):
         print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-        train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader_train)
-        valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader_val)
+        train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(models, optimizer, criterion, loader_train)
+        valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(models,  criterion, loader_val)
         train_loss.append(train_epoch_loss)
         valid_loss.append(valid_epoch_loss)
         train_r2.append(train_epoch_r2)
@@ -168,13 +173,11 @@ best_model = None
 best_r2 = 0
 #best_tl_model = None
 print("Starting hyperparameter tuning...")
-for bands in BANDS:
-    r2, model = run_model(lr, weight_decay, tl_model, bands)
-    if r2 > best_r2:
-        best_r2 = r2
-        best_model = model
+r2, model = run_model(lr, weight_decay, tl_model, BANDS)
+best_r2 = r2
+best_model = model
         #best_tl_model = tl_model
-print(f"Best bands are {bands}. Achieved val r^2 of: {best_r2:.4f}")
+# print(f"Achieved val r^2 of: {best_r2:.4f}")
 
 print("Saving best model...")
 
