@@ -2,6 +2,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 import os
 import argparse
+import csv
 
 import math
 import numpy as np
@@ -46,7 +47,7 @@ transform = data_transform()
 num_workers = 84
 #BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
 #BANDS = [[6, 3, 2], [4, 3, 0]]
-BANDS = [[2, 1, 0]]
+bands = [2, 1, 0]
 
 # Hyperparameters
 tl_model = 'resnet18'
@@ -55,8 +56,8 @@ lr = 1e-3
 batch_size = 64
 # l2 regularization
 weight_decay = 1e-3
-epochs = 20
-
+epochs = 10
+frozen_layers = [3, 6, 8]
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
 
@@ -132,7 +133,7 @@ def val_epoch(model, criterion, loader):
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, r2, epoch_acc
 
-def run_model(lr, weight_decay, tl_model, bands):
+def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
 # lists to keep track of losses and accuracies
     print('Fetching Dataloaders...')
     loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
@@ -143,7 +144,7 @@ def run_model(lr, weight_decay, tl_model, bands):
     ct = 0
     for child in model.children():
         ct += 1
-        if ct <= 15:
+        if ct <= frozen_layer:
             for param in child.parameters():
                 param.requires_grad = False
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -167,19 +168,21 @@ def run_model(lr, weight_decay, tl_model, bands):
         print('-'*75)
     performance = max(valid_r2)
     print(f"Finished training with bands {bands}. Best val r^2: {performance:.4f}")
-    return performance, model
+    return performance, model, train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc
 
 # HYPERPARAMETER TUNING
 
 best_model = None
 best_r2 = 0
+best_stats = []
 #best_tl_model = None
 print("Starting hyperparameter tuning...")
-for bands in BANDS:
-    r2, model = run_model(lr, weight_decay, tl_model, bands)
+for frozen_layer in frozen_layers:
+    r2, model, train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc = run_model(lr, weight_decay, tl_model, bands, frozen_layer)
     if r2 > best_r2:
         best_r2 = r2
         best_model = model
+        best_stats = [train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc]
         #best_tl_model = tl_model
 print(f"Achieved val r^2 of: {best_r2:.4f}")
 
@@ -187,7 +190,14 @@ print("Saving best model...")
 
 PATH = '/home/timwu0/231nproj/sb-satellite-imagery/saved_models.pt'
 
-torch.save(best_model, '/home/timwu0/231nproj/sb-satellite-imagery/saved_models.pt')
+torch.save(best_model, '/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_model.pt')
+
+Details = ['Training Loss', 'Training R^2', 'Training Accuracy', 'Validation Loss', 'Validation R^2', 'Validation Accuracy']  
+with open('/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_stats.csv', 'w') as f: 
+    write = csv.writer(f) 
+    write.writerow(Details) 
+    write.writerows(best_stats) 
+
 
 print("Best model saved in ", PATH)
 
