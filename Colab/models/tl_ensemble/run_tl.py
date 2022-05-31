@@ -168,8 +168,8 @@ def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
         print(f"Training loss: {train_epoch_loss:.4f}, training r^2: {train_epoch_r2:.4f} training acc: {train_epoch_acc:.4f}%")
         print(f"Validation loss: {valid_epoch_loss:.4f}, validation r^2: {valid_epoch_r2:.4f} validation acc: {valid_epoch_acc:.4f}%")
         print('-'*75)
-        if r2 > best_r2:
-            best_r2 = r2
+        if valid_epoch_r2 > best_r2:
+            best_r2 = valid_epoch_r2
             best_model = model
             torch.save(best_model, '/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_model.pt')
     performance = max(valid_r2)
