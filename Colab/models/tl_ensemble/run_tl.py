@@ -167,7 +167,7 @@ def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
         print(f"Validation loss: {valid_epoch_loss:.4f}, validation r^2: {valid_epoch_r2:.4f} validation acc: {valid_epoch_acc:.4f}%")
         print('-'*75)
     performance = max(valid_r2)
-    print(f"Finished training with bands {bands}. Best val r^2: {performance:.4f}")
+    print(f"Finished training with {frozen_layer:.1f} layers frozen. Best val r^2: {performance:.4f}")
     return performance, model, train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc
 
 # HYPERPARAMETER TUNING
@@ -175,6 +175,7 @@ def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
 best_model = None
 best_r2 = 0
 best_stats = []
+best_frozen_layer = 0
 #best_tl_model = None
 print("Starting hyperparameter tuning...")
 for frozen_layer in frozen_layers:
@@ -183,8 +184,9 @@ for frozen_layer in frozen_layers:
         best_r2 = r2
         best_model = model
         best_stats = [train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc]
+        best_frozen_layer = frozen_layer
         #best_tl_model = tl_model
-print(f"Achieved val r^2 of: {best_r2:.4f}")
+print(f"Best score when freezing {frozen_layer:.1f} layers. Achieved val r^2 of: {best_r2:.4f}")
 
 print("Saving best model...")
 
