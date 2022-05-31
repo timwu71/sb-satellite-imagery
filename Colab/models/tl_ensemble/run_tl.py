@@ -44,24 +44,22 @@ expectation_helper = torch.unsqueeze(torch.arange(num_classes), dim=0)
 print_every = 500
 transform = data_transform()
 num_workers = 84
+BANDS = [[2, 1, 0], [3, 6, 0], [6, 3, 2]]
 
 # Hyperparameters
-tl_models = ['resnet18', 'resnet34', 'resnet50']
+tl_model = 'resnet18'
 #lrs = [5e-4, 1e-3, 2e-3, 4e-3]
 lr = 1e-3
 batch_size = 64
 # l2 regularization
-weight_decay = 0
+weight_decay = 1e-3
 epochs = 5
 
 
 # Resnet build inspired by https://debuggercafe.com/satellite-image-classification-using-pytorch-resnet34/
-print('Fetching Dataloaders...')
-loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False)
-_, loader_val_partial, _ = get_dataloaders(batch_size, num_workers, partial=True)
 
 
-def train_epoch(model, optimizer, criterion, loader=loader_train):
+def train_epoch(model, optimizer, criterion, loader):
     model.train()
     print('Training...')
     all_preds = []
@@ -101,7 +99,7 @@ def train_epoch(model, optimizer, criterion, loader=loader_train):
     
     return epoch_loss, r2, epoch_acc
 
-def val_epoch(model, criterion, loader=loader_val):
+def val_epoch(model, criterion, loader):
     model.eval()
     print('Validating...')
     all_preds = []
@@ -132,8 +130,10 @@ def val_epoch(model, criterion, loader=loader_val):
     epoch_acc = 100. * (np.absolute(all_preds - all_y) < 0.5).sum().item() / all_y.shape[0]
     return epoch_loss, r2, epoch_acc
 
-def run_model(lr, weight_decay, tl_model):
+def run_model(lr, weight_decay, tl_model, bands):
 # lists to keep track of losses and accuracies
+    print('Fetching Dataloaders...')
+    loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
     train_loss, valid_loss = [], []
     train_r2, valid_r2 = [], []
     train_acc, valid_acc = [], []
@@ -145,8 +145,8 @@ def run_model(lr, weight_decay, tl_model):
     # start the training
     for epoch in range(epochs):
         print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-        train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader=loader_train)
-        valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader=loader_val)
+        train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader_train)
+        valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader_val)
         train_loss.append(train_epoch_loss)
         valid_loss.append(valid_epoch_loss)
         train_r2.append(train_epoch_r2)
@@ -165,15 +165,23 @@ def run_model(lr, weight_decay, tl_model):
 
 best_model = None
 best_r2 = 0
-best_tl_model = None
+#best_tl_model = None
 print("Starting hyperparameter tuning...")
-for tl_model in tl_models:
-    r2, model = run_model(lr, weight_decay, tl_model)
+for bands in BANDS:
+    r2, model = run_model(lr, weight_decay, tl_model, bands)
     if r2 > best_r2:
         best_r2 = r2
         best_model = model
-        best_tl_model = tl_model
-print(f"Best weight decay is {best_tl_model}. Achieved val r^2 of: {best_r2:.4f}")
+        #best_tl_model = tl_model
+print(f"Best bands are {bands}. Achieved val r^2 of: {best_r2:.4f}")
+
+print("Saving best model...")
+
+PATH = '/home/timwu0/231nproj/sb-satellite-imagery/saved_models.pt'
+
+torch.save(best_model, '/home/timwu0/231nproj/sb-satellite-imagery/saved_models.pt')
+
+print("Best model saved in ", PATH)
 
 #print("all train losses: ", train_loss)
 #print("all train accuracies: ", train_acc)

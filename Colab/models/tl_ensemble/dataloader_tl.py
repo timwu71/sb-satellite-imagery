@@ -96,7 +96,7 @@ class SustainBenchDataset(Dataset):
 
         return image, label
 
-def get_dataloaders(batch_size, num_workers, partial):
+def get_dataloaders(batch_size, num_workers, partial, bands):
     if partial:
         train_dataset = SustainBenchDataset(
             annotations_file='/home/timwu0/231nproj/data/dhs_final_labels.csv',
@@ -104,7 +104,7 @@ def get_dataloaders(batch_size, num_workers, partial):
             category = 'n_under5_mort',
             file_ext = '.npz',
             split = 'train_partial',
-            bands = [2, 1, 0],
+            bands = bands,
             transform=data_transform()
         )
 
@@ -113,8 +113,8 @@ def get_dataloaders(batch_size, num_workers, partial):
             img_dir='/home/timwu0/231nproj/data/',
             category = 'n_under5_mort',
             file_ext = '.npz',
-            split = 'val_partial',  #TODO: CHANGE THIS TO VAL
-            bands = [2, 1, 0],
+            split = 'val_partial',
+            bands = bands,
             transform=data_transform()
         )
 
@@ -123,8 +123,8 @@ def get_dataloaders(batch_size, num_workers, partial):
             img_dir='/home/timwu0/231nproj/data/',
             category = 'n_under5_mort',
             file_ext = '.npz',
-            split = 'test_partial',  #TODO: CHANGE THIS TO TEST
-            bands = [2, 1, 0],
+            split = 'test_partial',
+            bands = bands,
             transform=data_transform()
         )
     else:
@@ -134,7 +134,7 @@ def get_dataloaders(batch_size, num_workers, partial):
             category = 'n_under5_mort',
             file_ext = '.npz',
             split = 'train',
-            bands = [2, 1, 0],
+            bands = bands,
             transform=data_transform()
         )
 
@@ -143,8 +143,8 @@ def get_dataloaders(batch_size, num_workers, partial):
             img_dir='/home/timwu0/231nproj/data/',
             category = 'n_under5_mort',
             file_ext = '.npz',
-            split = 'val',  #TODO: CHANGE THIS TO VAL
-            bands = [2, 1, 0],
+            split = 'val', 
+            bands = bands,
             transform=data_transform()
         )
 
@@ -153,8 +153,8 @@ def get_dataloaders(batch_size, num_workers, partial):
             img_dir='/home/timwu0/231nproj/data/',
             category = 'n_under5_mort',
             file_ext = '.npz',
-            split = 'test',  #TODO: CHANGE THIS TO TEST
-            bands = [2, 1, 0],
+            split = 'test',
+            bands = bands,
             transform=data_transform()
         )
 
