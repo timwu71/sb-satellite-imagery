@@ -32,6 +32,7 @@ from dataloader_tl import *
 
 USE_GPU = True
 dtype = torch.float32 
+TUNING = False
 
 if USE_GPU and torch.cuda.is_available():
     device = torch.device('cuda')
@@ -136,7 +137,7 @@ def val_epoch(model, criterion, loader):
 def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
 # lists to keep track of losses and accuracies
     print('Fetching Dataloaders...')
-    loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
+    loader_train, loader_val, _ = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
     train_loss, valid_loss = [], []
     train_r2, valid_r2 = [], []
     train_acc, valid_acc = [], []
@@ -176,35 +177,48 @@ def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
     print(f"Finished training with {frozen_layer:.1f} layers frozen. Best val r^2: {performance:.4f}")
     return performance, model, train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc
 
+
+if TUNING:
 # HYPERPARAMETER TUNING
 
-best_model = None
-best_r2 = 0
-best_stats = []
-best_frozen_layer = 0
-#best_tl_model = None
-print("Starting hyperparameter tuning...")
-for frozen_layer in frozen_layers:
-    r2, model, train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc = run_model(lr, weight_decay, tl_model, bands, frozen_layer)
-    if r2 > best_r2:
-        best_r2 = r2
-        best_model = model
-        best_stats = [train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc]
-        best_frozen_layer = frozen_layer
-        #best_tl_model = tl_model
-print(f"Best score when freezing {frozen_layer:.1f} layers. Achieved val r^2 of: {best_r2:.4f}")
+    best_model = None
+    best_r2 = 0
+    best_stats = []
+    best_frozen_layer = 0
+    #best_tl_model = None
+    print("Starting hyperparameter tuning...")
+    for frozen_layer in frozen_layers:
+        r2, model, train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc = run_model(lr, weight_decay, tl_model, bands, frozen_layer)
+        if r2 > best_r2:
+            best_r2 = r2
+            best_model = model
+            best_stats = [train_loss, train_r2, train_acc, valid_loss, valid_r2, valid_acc]
+            best_frozen_layer = frozen_layer
+            #best_tl_model = tl_model
+    print(f"Best score when freezing {frozen_layer:.1f} layers. Achieved val r^2 of: {best_r2:.4f}")
 
-print("Saving best model...")
+    print("Saving best model...")
 
-#PATH = '/home/timwu0/231nproj/sb-satellite-imagery/saved_models.pt'
+    #PATH = '/home/timwu0/231nproj/sb-satellite-imagery/saved_models.pt'
 
-#torch.save(best_model, '/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_model.pt')
+    #torch.save(best_model, '/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_model.pt')
 
-Details = ['Training Loss', 'Training R^2', 'Training Accuracy', 'Validation Loss', 'Validation R^2', 'Validation Accuracy']  
-with open('/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_stats.csv', 'w') as f: 
-    write = csv.writer(f) 
-    write.writerow(Details) 
-    write.writerows(best_stats) 
+    Details = ['Training Loss', 'Training R^2', 'Training Accuracy', 'Validation Loss', 'Validation R^2', 'Validation Accuracy']  
+    with open('/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_stats.csv', 'w') as f: 
+        write = csv.writer(f) 
+        write.writerow(Details) 
+        write.writerows(best_stats) 
+else:
+    # Test time!
+    print('Testing on test set...')
+    _, _, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
+    model = torch.load('/home/timwu0/231nproj/sb-satellite-imagery/saved_data/best_model.pt')
+    criterion = nn.L1Loss()
+
+    test_loss, test_r2, test_acc = val_epoch(model, criterion, loader_test)
+    print(f"Test loss: {test_loss:.4f}, test r^2: {test_r2:.4f}, test acc: {test_acc:.4f}%")
+
+
 
 
 #print("Best model saved in ", PATH)
