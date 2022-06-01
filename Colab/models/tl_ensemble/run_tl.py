@@ -137,7 +137,7 @@ def val_epoch(model, criterion, loader):
 def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
 # lists to keep track of losses and accuracies
     print('Fetching Dataloaders...')
-    loader_train, loader_val, _ = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
+    loader_train, loader_val, loader_test = get_dataloaders(batch_size, num_workers, partial=False, bands=bands)
     train_loss, valid_loss = [], []
     train_r2, valid_r2 = [], []
     train_acc, valid_acc = [], []
@@ -159,6 +159,7 @@ def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
         print(f"[INFO]: Epoch {epoch+1} of {epochs}")
         train_epoch_loss, train_epoch_r2, train_epoch_acc = train_epoch(model, optimizer, criterion, loader_train)
         valid_epoch_loss, valid_epoch_r2, valid_epoch_acc = val_epoch(model,  criterion, loader_val)
+        test_epoch_loss, test_epoch_r2, test_epoch_acc = val_epoch(model,  criterion, loader_test)
         train_loss.append(train_epoch_loss)
         valid_loss.append(valid_epoch_loss)
         train_r2.append(train_epoch_r2)
@@ -168,6 +169,7 @@ def run_model(lr, weight_decay, tl_model, bands, frozen_layer):
         print(f"Epoch {epoch+1} finished. Final epoch results:")
         print(f"Training loss: {train_epoch_loss:.4f}, training r^2: {train_epoch_r2:.4f} training acc: {train_epoch_acc:.4f}%")
         print(f"Validation loss: {valid_epoch_loss:.4f}, validation r^2: {valid_epoch_r2:.4f} validation acc: {valid_epoch_acc:.4f}%")
+        print(f"Test loss: {test_epoch_loss:.4f}, test r^2: {test_epoch_r2:.4f} test acc: {test_epoch_acc:.4f}%")
         print('-'*75)
         if valid_epoch_r2 > best_r2:
             best_r2 = valid_epoch_r2
